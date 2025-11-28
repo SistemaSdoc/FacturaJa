@@ -1,5 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import MainLayout from '../../components/MainLayout';
 
 interface Cliente {
@@ -12,12 +13,13 @@ interface Cliente {
 }
 
 export default function ClientesPage() {
+  const router = useRouter(); // <- ESSENCIAL
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [selected, setSelected] = useState<number[]>([]);
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [loading, setLoading] = useState(false);
-  const [modal, setModal] = useState<{open: boolean, action: string, id?: number}>({open: false, action: '', id: undefined});
+  const [modal, setModal] = useState<{ open: boolean, action: string, id?: number }>({ open: false, action: '', id: undefined });
 
   const mockClientes: Cliente[] = [
     { id: 1, nome: 'João Silva', email: 'joao@gmail.com', telefone: '912345678', empresa: 'Empresa A', status: 'Ativo' },
@@ -45,7 +47,7 @@ export default function ClientesPage() {
   const handleAction = (id: number | number[], action: string) => {
     alert(`Ação "${action}" executada em ${Array.isArray(id) ? 'vários clientes' : 'cliente ' + id}`);
     setSelected([]);
-    setModal({open: false, action: ''});
+    setModal({ open: false, action: '' });
   };
 
   const totalAtivos = mockClientes.filter(c => c.status === 'Ativo').length;
@@ -91,7 +93,7 @@ export default function ClientesPage() {
         </select>
         {selected.length > 0 && (
           <button
-            onClick={() => setModal({open:true, action:'delete'})}
+            onClick={() => setModal({ open: true, action: 'delete' })}
             className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
           >
             Apagar selecionados ({selected.length})
@@ -104,7 +106,7 @@ export default function ClientesPage() {
         <table className="w-full border-collapse bg-white shadow rounded">
           <thead className="bg-[#E5E5E5]">
             <tr>
-              <th className="p-3"><input type="checkbox" checked={selected.length === clientes.length && clientes.length>0} onChange={e => setSelected(e.target.checked ? clientes.map(c=>c.id):[])} /></th>
+              <th className="p-3"><input type="checkbox" checked={selected.length === clientes.length && clientes.length > 0} onChange={e => setSelected(e.target.checked ? clientes.map(c => c.id) : [])} /></th>
               <th className="p-3 text-left">Nome</th>
               <th className="p-3 text-left">Email</th>
               <th className="p-3 text-left">Telefone</th>
@@ -116,16 +118,31 @@ export default function ClientesPage() {
           <tbody>
             {clientes.map(c => (
               <tr key={c.id} className="border-t hover:bg-gray-50">
-                <td className="p-3"><input type="checkbox" checked={selected.includes(c.id)} onChange={()=>toggleSelect(c.id)} /></td>
+                <td className="p-3"><input type="checkbox" checked={selected.includes(c.id)} onChange={() => toggleSelect(c.id)} /></td>
                 <td className="p-3 font-medium text-[#123859]">{c.nome}</td>
                 <td className="p-3">{c.email}</td>
                 <td className="p-3">{c.telefone}</td>
                 <td className="p-3">{c.empresa}</td>
-                <td className={`p-3 font-semibold ${c.status==='Ativo'?'text-green-500':'text-red-500'}`}>{c.status}</td>
+                <td className={`p-3 font-semibold ${c.status === 'Ativo' ? 'text-green-500' : 'text-red-500'}`}>{c.status}</td>
                 <td className="p-3 flex gap-2">
-                  <button className="text-blue-500 hover:underline">Ver</button>
-                  <button className="text-orange-500 hover:underline">Editar</button>
-                  <button onClick={()=>setModal({open:true, action:'delete', id:c.id})} className="text-red-500 hover:underline">Apagar</button>
+                  <button
+                    className="text-blue-500 "
+                    onClick={() => router.push(`/dashboard/Clientes/${c.id}/ver`)}
+                  >
+                    Ver
+                  </button>
+                  <button
+                    className="text-orange-500 "
+                    onClick={() => router.push(`/dashboard/Clientes/${c.id}/editar`)}
+                  >
+                    Editar
+                  </button>
+                  <button
+                    className="text-red-500 "
+                    onClick={() => router.push(`/dashboard/Clientes/${c.id}/apagar`)}
+                  >
+                    Apagar
+                  </button>
                 </td>
               </tr>
             ))}
@@ -142,8 +159,8 @@ export default function ClientesPage() {
               Tem certeza que deseja {modal.action} {modal.id ? 'este cliente?' : 'os clientes selecionados?'}
             </p>
             <div className="flex justify-end gap-2">
-              <button onClick={()=>setModal({open:false, action:''})} className="px-4 py-2 border rounded">Cancelar</button>
-              <button onClick={()=>handleAction(modal.id ?? selected, modal.action)} className="px-4 py-2 bg-[#F9941F] text-white rounded">Confirmar</button>
+              <button onClick={() => setModal({ open: false, action: '' })} className="px-4 py-2 border rounded">Cancelar</button>
+              <button onClick={() => handleAction(modal.id ?? selected, modal.action)} className="px-4 py-2 bg-[#F9941F] text-white rounded">Confirmar</button>
             </div>
           </div>
         </div>

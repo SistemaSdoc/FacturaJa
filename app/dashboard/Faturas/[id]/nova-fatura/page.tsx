@@ -1,6 +1,6 @@
 'use client';
-import React, { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import MainLayout from '../../../../components/MainLayout';
 
 interface LineItem {
@@ -24,70 +24,65 @@ interface Fatura {
   notas?: string;
 }
 
-export default function EditarFaturaPage() {
-  const { id } = useParams() as { id: string };
+export default function NovaFaturaPage() {
   const router = useRouter();
-
-  const [faturas, setFaturas] = useState<Fatura[]>([]);
-  const [fatura, setFatura] = useState<Fatura | null>(null);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    const saved = localStorage.getItem('faturas');
-    const list: Fatura[] = saved ? JSON.parse(saved) : [];
-    setFaturas(list);
-
-    const f = list.find(f => f.id === Number(id));
-    if (f) setFatura(f);
-    else setError('Fatura não encontrada (mock)');
-  }, [id]);
+  const [fatura, setFatura] = useState<Fatura>({
+    id: Date.now(),
+    numero: '',
+    cliente: '',
+    data: '',
+    vencimento: '',
+    total: 0,
+    status: 'Pendente',
+    serie: 'A',
+    items: [],
+    notas: ''
+  });
 
   const handleChange = (field: keyof Fatura, value: any) => {
-    if (!fatura) return;
     setFatura({ ...fatura, [field]: value });
   };
 
   const handleItemChange = (index: number, field: keyof LineItem, value: any) => {
-    if (!fatura || !fatura.items) return;
+    if (!fatura.items) return;
     const updatedItems = [...fatura.items];
     updatedItems[index] = { ...updatedItems[index], [field]: value };
     setFatura({ ...fatura, items: updatedItems });
   };
 
   const addItem = () => {
-    if (!fatura) return;
     const newItem: LineItem = { id: Date.now(), descricao: '', quantidade: 1, precoUnitario: 0, impostoPercent: 0 };
     setFatura({ ...fatura, items: [...(fatura.items || []), newItem] });
   };
 
   const removeItem = (index: number) => {
-    if (!fatura || !fatura.items) return;
+    if (!fatura.items) return;
     const updatedItems = [...fatura.items];
     updatedItems.splice(index, 1);
     setFatura({ ...fatura, items: updatedItems });
   };
 
   const computeTotal = () => {
-    if (!fatura || !fatura.items) return 0;
-    return fatura.items.reduce((acc, item) => acc + item.quantidade * item.precoUnitario * (1 + item.impostoPercent / 100), 0);
+    return fatura.items?.reduce((acc, item) => acc + item.quantidade * item.precoUnitario * (1 + item.impostoPercent/100), 0) ?? 0;
   };
 
   const saveFatura = () => {
-    if (!fatura) return;
-    const updated = faturas.map(f => f.id === fatura.id ? { ...fatura, total: computeTotal() } : f);
+    const saved = localStorage.getItem('faturas');
+    const list: Fatura[] = saved ? JSON.parse(saved) : [];
+    const updated = [...list, { ...fatura, total: computeTotal() }];
     localStorage.setItem('faturas', JSON.stringify(updated));
-    alert('Fatura salva com sucesso!');
+    alert('Fatura criada com sucesso!');
     router.push('/dashboard/Faturas');
   };
 
-  if (error) return <MainLayout><p className="text-red-500">{error}</p></MainLayout>;
-  if (!fatura) return <MainLayout><p>Carregando fatura...</p></MainLayout>;
-
   return (
     <MainLayout>
-      <h1 className="text-3xl font-bold text-[#123859] mb-4">Editar Fatura {fatura.numero}</h1>
-
+      <h1 className="text-3xl font-bold text-[#123859] mb-4">Nova Fatura</h1>
       <div className="bg-white p-4 rounded shadow mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block font-semibold">Número</label>
+          <input type="text" value={fatura.numero} onChange={e => handleChange('numero', e.target.value)} className="border p-2 rounded w-full" />
+        </div>
         <div>
           <label className="block font-semibold">Cliente</label>
           <input type="text" value={fatura.cliente} onChange={e => handleChange('cliente', e.target.value)} className="border p-2 rounded w-full" />
@@ -108,17 +103,21 @@ export default function EditarFaturaPage() {
             <option value="Cancelada">Cancelada</option>
           </select>
         </div>
+        <div>
+          <label className="block font-semibold">Série</label>
+          <input type="text" value={fatura.serie} onChange={e => handleChange('serie', e.target.value)} className="border p-2 rounded w-full" />
+        </div>
       </div>
 
       <h2 className="text-xl font-semibold text-[#123859] mb-2">Itens</h2>
       <div className="bg-white p-4 rounded shadow mb-4">
-        {fatura.items && fatura.items.map((item, index) => (
+        {fatura.items?.map((item, index) => (
           <div key={item.id} className="flex gap-2 mb-2 items-center">
             <input type="text" value={item.descricao} onChange={e => handleItemChange(index, 'descricao', e.target.value)} placeholder="Descrição" className="border p-2 rounded w-1/3" />
             <input type="number" value={item.quantidade} onChange={e => handleItemChange(index, 'quantidade', Number(e.target.value))} placeholder="Qtd" className="border p-2 rounded w-1/6" />
             <input type="number" value={item.precoUnitario} onChange={e => handleItemChange(index, 'precoUnitario', Number(e.target.value))} placeholder="Preço Unit" className="border p-2 rounded w-1/6" />
             <input type="number" value={item.impostoPercent} onChange={e => handleItemChange(index, 'impostoPercent', Number(e.target.value))} placeholder="% Imposto" className="border p-2 rounded w-1/6" />
-            <div>€ {(item.quantidade * item.precoUnitario * (1 + item.impostoPercent / 100)).toFixed(2)}</div>
+            <div>€ {(item.quantidade * item.precoUnitario * (1 + item.impostoPercent/100)).toFixed(2)}</div>
             <button onClick={() => removeItem(index)} className="text-red-500 font-bold">X</button>
           </div>
         ))}

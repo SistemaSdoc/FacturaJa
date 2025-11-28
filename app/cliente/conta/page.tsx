@@ -34,10 +34,17 @@ export default function ClienteContaPage() {
   const [cliente, setCliente] = useState<Cliente | null>(null);
   const [faturas, setFaturas] = useState<Fatura[]>([]);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false); // novo
 
+  // marca que o componente está montado no client
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // simula carregamento de dados
   useEffect(() => {
     setLoading(true);
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       setCliente({
         nome: 'João Silva',
         email: 'joao@email.com',
@@ -49,12 +56,16 @@ export default function ClienteContaPage() {
       ]);
       setLoading(false);
     }, 500);
+    return () => clearTimeout(timer);
   }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     router.push('/');
   };
+
+  // renderiza somente no client
+  if (!mounted) return null;
 
   if (loading) return <p className="p-6 text-center">Carregando...</p>;
   if (!cliente) return <p className="p-6 text-center text-red-500">Cliente não encontrado.</p>;

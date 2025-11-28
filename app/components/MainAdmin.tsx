@@ -23,6 +23,7 @@ export default function MainAdmin({ children }: MainAdminProps) {
   const router = useRouter();
   const pathname = usePathname();
 
+  const [mounted, setMounted] = useState(false); // 🔹 Para evitar hydration mismatch
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
   const [profileOpen, setProfileOpen] = useState<boolean>(false);
   const [notifOpen, setNotifOpen] = useState<boolean>(false);
@@ -34,10 +35,11 @@ export default function MainAdmin({ children }: MainAdminProps) {
 
   const [adminName, setAdminName] = useState<string>('Administrador');
   const [adminAvatar, setAdminAvatar] = useState<string | null>(null);
-
   const [searchQuery, setSearchQuery] = useState<string>('');
 
+  // Só rodar no cliente
   useEffect(() => {
+    setMounted(true);
     try {
       const name = localStorage.getItem('adminName') || localStorage.getItem('name') || '';
       const avatar = localStorage.getItem('adminAvatar') || localStorage.getItem('avatar') || '';
@@ -64,13 +66,6 @@ export default function MainAdmin({ children }: MainAdminProps) {
     { label: 'Auditoria', path: '/admin/auditoria', Icon: FileSearch },
   ];
 
-  function handleLogout() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('adminName');
-    localStorage.removeItem('adminAvatar');
-    router.push('/');
-  }
-
   const quickActions = [
     { label: 'Nova Empresa', onClick: () => router.push('/admin/empresas/novo'), Icon: PlusCircle },
     { label: 'Nova Fatura', onClick: () => router.push('/dashboard/faturas/novo'), Icon: PlusCircle },
@@ -82,29 +77,26 @@ export default function MainAdmin({ children }: MainAdminProps) {
     { id: 2, text: 'Fatura 001 venceu hoje', time: '3h' },
   ];
 
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('adminName');
+    localStorage.removeItem('adminAvatar');
+    router.push('/');
+  };
+
+  // 🔹 Evita renderização no servidor
+  if (!mounted) return null;
+
   return (
     <div className="flex min-h-screen bg-[#F2F2F2]">
       {/* SIDEBAR */}
-      <aside
-        className={`
-          bg-white text-[#123859] shadow-md p-4 flex flex-col justify-between
-          transition-all duration-300
-          ${sidebarOpen ? 'w-64' : 'w-20'}
-        `}
-      >
+      <aside className={`bg-white text-[#123859] shadow-md p-4 flex flex-col justify-between transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-20'}`}>
         <div>
           <div className="flex items-center justify-between mb-6">
             <div className={`flex items-center gap-2 ${!sidebarOpen ? 'justify-center w-full' : ''}`}>
-              <div className={`${!sidebarOpen ? 'hidden' : 'text-[#123859] font-bold text-lg'}`}>
-                Administrador
-              </div>
+              <div className={`${!sidebarOpen ? 'hidden' : 'text-[#123859] font-bold text-lg'}`}>Administrador</div>
             </div>
-
-            <button
-              aria-label={sidebarOpen ? 'Fechar sidebar' : 'Abrir sidebar'}
-              onClick={() => setSidebarOpen(s => !s)}
-              className="p-1 rounded hover:bg-gray-100 transition-colors duration-150"
-            >
+            <button aria-label={sidebarOpen ? 'Fechar sidebar' : 'Abrir sidebar'} onClick={() => setSidebarOpen(s => !s)} className="p-1 rounded hover:bg-gray-100 transition-colors duration-150">
               <Menu size={18} />
             </button>
           </div>
@@ -114,22 +106,8 @@ export default function MainAdmin({ children }: MainAdminProps) {
               const isActive = pathname === item.path || pathname?.startsWith(item.path + '/');
               const Icon = item.Icon;
               return (
-                <button
-                  key={item.path}
-                  onClick={() => router.push(item.path)}
-                  className={`
-                    flex items-center gap-3 p-2 rounded transition-all duration-200
-                    ${isActive
-                      ? 'bg-[#F9941F] text-white shadow-md scale-105'
-                      : 'text-[#123859] hover:bg-[#F9941F] hover:text-white hover:scale-105'
-                    }
-                    ${!sidebarOpen ? 'justify-center' : ''}
-                  `}
-                >
-                  <Icon
-                    size={18}
-                    className={`transition-colors duration-200 ${isActive ? 'text-white' : 'text-[#123859]'}`}
-                  />
+                <button key={item.path} onClick={() => router.push(item.path)} className={`flex items-center gap-3 p-2 rounded transition-all duration-200 ${isActive ? 'bg-[#F9941F] text-white shadow-md scale-105' : 'text-[#123859] hover:bg-[#F9941F] hover:text-white hover:scale-105'} ${!sidebarOpen ? 'justify-center' : ''}`}>
+                  <Icon size={18} className={`transition-colors duration-200 ${isActive ? 'text-white' : 'text-[#123859]'}`} />
                   <span className={`${!sidebarOpen ? 'hidden' : ''} transition-colors duration-200`}>{item.label}</span>
                 </button>
               );
@@ -138,10 +116,7 @@ export default function MainAdmin({ children }: MainAdminProps) {
         </div>
 
         <div className={`${!sidebarOpen ? 'flex justify-center' : ''}`}>
-          <button
-            onClick={handleLogout}
-            className={`w-full px-3 py-2 rounded text-white bg-red-500 hover:brightness-95 flex items-center justify-center gap-2 transition-all duration-200`}
-          >
+          <button onClick={handleLogout} className="w-full px-3 py-2 rounded text-white bg-red-500 hover:brightness-95 flex items-center justify-center gap-2 transition-all duration-200">
             <LogOut size={16} />
             <span className={`${!sidebarOpen ? 'hidden' : ''}`}>Logout</span>
           </button>
@@ -153,11 +128,7 @@ export default function MainAdmin({ children }: MainAdminProps) {
         {/* NAVBAR */}
         <header className="w-full bg-white shadow-md py-3 px-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button
-              aria-label="Alternar sidebar"
-              onClick={() => setSidebarOpen(s => !s)}
-              className="p-2 rounded hover:bg-gray-100 md:hidden transition-colors duration-150"
-            >
+            <button aria-label="Alternar sidebar" onClick={() => setSidebarOpen(s => !s)} className="p-2 rounded hover:bg-gray-100 md:hidden transition-colors duration-150">
               <Menu className="text-[#123859]" size={18} />
             </button>
 
@@ -171,11 +142,7 @@ export default function MainAdmin({ children }: MainAdminProps) {
                 placeholder="Pesquisar..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    router.push(`/admin/dashboard?search=${encodeURIComponent(searchQuery)}`);
-                  }
-                }}
+                onKeyDown={(e) => { if (e.key === 'Enter') router.push(`/admin/dashboard?search=${encodeURIComponent(searchQuery)}`); }}
                 className="bg-transparent outline-none text-sm text-[#123859]"
               />
             </div>
@@ -184,18 +151,14 @@ export default function MainAdmin({ children }: MainAdminProps) {
           <div className="flex items-center gap-3">
             {/* QUICK ACTIONS */}
             <div className="relative" ref={quickRef}>
-              <button
-                onClick={() => { setQuickOpen(q => !q); setNotifOpen(false); }}
-                className="p-2 rounded hover:bg-gray-100 transition-colors duration-150"
-              >
+              <button onClick={() => { setQuickOpen(q => !q); setNotifOpen(false); }} className="p-2 rounded hover:bg-gray-100 transition-colors duration-150">
                 <PlusCircle size={18} className="text-[#123859] transition-colors duration-200 hover:text-[#F9941F]" />
               </button>
-
               {quickOpen && (
                 <div className="absolute right-0 mt-2 w-52 bg-white rounded shadow-lg z-50">
                   <div className="p-2 border-b text-sm font-medium text-[#123859]">Ações rápidas</div>
                   <div className="p-2 flex flex-col gap-1">
-                    {quickActions.map((q) => (
+                    {quickActions.map(q => (
                       <button key={q.label} onClick={() => { q.onClick(); setQuickOpen(false); }} className="text-left px-3 py-2 rounded hover:bg-[#F2F2F2] flex items-center gap-2 transition-all duration-150 hover:scale-105">
                         <q.Icon size={16} className="transition-colors duration-150 hover:text-[#F9941F]" />
                         <span>{q.label}</span>
@@ -208,29 +171,17 @@ export default function MainAdmin({ children }: MainAdminProps) {
 
             {/* NOTIFICAÇÕES */}
             <div className="relative" ref={notifRef}>
-              <button
-                onClick={() => { setNotifOpen(n => !n); setQuickOpen(false); }}
-                className="p-2 rounded hover:bg-gray-100 relative transition-colors duration-150"
-              >
+              <button onClick={() => { setNotifOpen(n => !n); setQuickOpen(false); }} className="p-2 rounded hover:bg-gray-100 relative transition-colors duration-150">
                 <Bell size={18} className="text-[#123859] transition-colors duration-200 hover:text-[#F9941F]" />
-                <span className="absolute -top-1 -right-1 px-1.5 py-0.5 text-xs text-white bg-red-500 rounded-full">2</span>
+                <span className="absolute -top-1 -right-1 px-1.5 py-0.5 text-xs text-white bg-red-500 rounded-full">{notifications.length}</span>
               </button>
             </div>
 
             {/* PROFILE */}
             <div className="relative" ref={profileRef}>
-              <button
-                onClick={() => { setProfileOpen(p => !p); setNotifOpen(false); setQuickOpen(false); }}
-                className="flex items-center gap-3 rounded px-2 py-1 hover:bg-gray-100 transition-colors duration-150"
-              >
+              <button onClick={() => { setProfileOpen(p => !p); setNotifOpen(false); setQuickOpen(false); }} className="flex items-center gap-3 rounded px-2 py-1 hover:bg-gray-100 transition-colors duration-150">
                 <div className="w-9 h-9 rounded-full overflow-hidden bg-gray-200">
-                  {adminAvatar ? (
-                    <img src={adminAvatar} alt="Avatar" className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-sm text-[#123859] font-semibold">
-                      {adminName.slice(0,1).toUpperCase()}
-                    </div>
-                  )}
+                  {adminAvatar ? <img src={adminAvatar} alt="Avatar" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-sm text-[#123859] font-semibold">{adminName.slice(0, 1).toUpperCase()}</div>}
                 </div>
                 <span className="hidden sm:inline text-[#123859] font-medium truncate max-w-[10rem] transition-colors duration-200">{adminName}</span>
                 <ChevronDown size={16} className="text-[#123859] hidden sm:inline transition-colors duration-200" />

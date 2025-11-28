@@ -8,9 +8,7 @@ import {
   LogOut,
   Menu,
   Search,
-  Settings,
-  PlusCircle,
-  ChevronDown
+  Settings
 } from 'lucide-react';
 
 interface MainClienteProps {
@@ -129,7 +127,7 @@ export default function MainCliente({ children }: MainClienteProps) {
             </button>
 
             <div className="flex items-center gap-2">
-              <img src="" alt="F" className="w-9 h-9" />
+              <img src={clientAvatar || '/images/default-avatar.png'} alt="Avatar do cliente" className="w-9 h-9 rounded-full" />
               <span className="font-bold text-[#123859]">{companyName}</span>
             </div>
 
@@ -177,9 +175,7 @@ export default function MainCliente({ children }: MainClienteProps) {
             <div className="relative" ref={profileRef}>
               <button onClick={() => setProfileOpen(p => !p)} className="flex items-center gap-3 rounded px-2 py-1 hover:bg-gray-100">
                 <div className="w-9 h-9 rounded-full overflow-hidden bg-gray-200">
-                  {clientAvatar ? <img src={clientAvatar} alt="Avatar" className="w-full h-full object-cover" /> :
-                    <div className="w-full h-full flex items-center justify-center text-sm text-[#123859] font-semibold">{clientName.slice(0,1).toUpperCase()}</div>
-                  }
+                  <img src={clientAvatar || '/images/default-avatar.png'} alt="Avatar do cliente" className="rounded-full w-16 h-16" />
                 </div>
                 <span className="hidden sm:inline text-[#123859] font-medium truncate max-w-[10rem]">{clientName}</span>
               </button>
