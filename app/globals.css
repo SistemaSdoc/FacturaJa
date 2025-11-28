@@ -1,0 +1,210 @@
+@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---------------------------
+   Global base styles
+--------------------------- */
+
+html, body, #__next {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background 0.45s ease, color 0.45s ease;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  line-height: 1.45;
+}
+
+/* ---------------------------
+   Paleta de cores oficial
+--------------------------- */
+
+:root {
+  --primary: #123859;   /* Azul-Escuro Forte (Ação, Botões, Texto principal) */
+  --accent:  #F9941F;   /* Laranja/Âmbar Intenso (Destaques, Títulos) */
+  --bg:      #F2F2F2;   /* Cinza Muito Claro (Fundo estático) */
+  --surface: #E5E5E5;   /* Cinza Intermédio (Secções) */
+
+  /* Gradiente baseado nas cores oficiais */
+  --g1: 18, 56, 89;     /* Azul-escuro */
+  --g2: 249, 148, 31;   /* Âmbar */
+  --g3: 242, 242, 242;  /* Fundo claro */
+}
+
+/* ---------------------------
+   Fundo principal com gradiente
+--------------------------- */
+
+body {
+  background: linear-gradient(135deg,
+    rgba(var(--g1), 0.2) 0%,
+    rgba(var(--g2), 0.1) 50%,
+    rgba(var(--g3), 0.05) 100%);
+  background-attachment: fixed;
+  background-size: cover;
+  color: var(--primary);
+}
+
+/* ---------------------------
+   Tipografia
+--------------------------- */
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+p, a, span, label {
+  color: var(--primary);
+  font-weight: 500;
+}
+footer *:not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(svg):not(img):not(span) {
+  color: #FFFFFF !important;
+}
+
+.location{
+  color: #F9941F !important;
+}
+.location1{
+  color: #E5E5E5;
+}
+/* Sidebar sempre com letras brancas */
+.sidebar {
+  color: white;       /* Letras brancas */
+}
+
+.sidebar a {
+  color: inherit;     /* Links herdam a cor branca */
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.sidebar a:hover {
+  color: #F9941F;     /* Hover laranja */
+}
+
+
+
+
+/* ---------------------------
+   Cards e containers
+--------------------------- */
+
+.bg-card {
+  background-color: var(--surface);
+  border: 2px solid var(--accent);
+  color: var(--primary);
+  transition: background-color 0.35s ease, border-color 0.35s ease, color 0.35s ease;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(18, 56, 89, 0.1);
+}
+
+.container-fixed {
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 1rem;
+}
+
+/* ---------------------------
+   Gradiente animado leve
+--------------------------- */
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.page-gradient {
+  background: linear-gradient(120deg,
+    rgba(var(--g1),0.2) 0%,
+    rgba(var(--g2),0.15) 50%,
+    rgba(var(--g3),0.1) 100%);
+  background-size: 300% 300%;
+  animation: gradientShift 12s ease infinite;
+  filter: blur(32px) saturate(120%);
+}
+
+/* ---------------------------
+   Overlay leve
+--------------------------- */
+
+.bg-overlay {
+  background: linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.95));
+}
+
+/* ---------------------------
+   Foco
+--------------------------- */
+
+:focus {
+  outline: none;
+}
+:focus-visible {
+  box-shadow: 0 0 0 3px rgba(249, 148, 31, 0.35);
+  border-radius: 6px;
+}
+
+/* ---------------------------
+   Botões padrão
+--------------------------- */
+
+.btn-primary {
+  background-color: var(--primary);
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border-radius: 10px;
+  font-weight: 600;
+  transition: 0.3s ease;
+}
+
+.btn-primary:hover {
+  background-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.btn-accent {
+  background-color: var(--accent);
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border-radius: 10px;
+  font-weight: 600;
+  transition: 0.3s ease;
+}
+
+.btn-accent:hover {
+  background-color: var(--primary);
+  transform: translateY(-1px);
+}
+
+/* ---------------------------
+   Motion preference
+--------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .page-gradient {
+    animation: none;
+  }
+}
+
+@keyframes gradientMove {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.bg-animated-gradient {
+  background: linear-gradient(-45deg, #F2F2F2, #E6E6E6, #12385925, #F9941F25);
+  background-size: 400% 400%;
+  animation: gradientMove 15s ease infinite;
+}
