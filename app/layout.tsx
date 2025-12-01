@@ -25,9 +25,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <DarkModeProvider>
-          {children}
-        </DarkModeProvider>
+        {children}
       </body>
     </html>
   );

@@ -26,7 +26,7 @@ export default function MainEmpresa({
     { label: 'Dashboard', path: '/dashboard', icon: <BarChart size={16} /> },
     { label: 'Faturas', path: '/dashboard/Faturas', icon: <FileSearch size={16} /> },
     { label: 'Clientes', path: '/dashboard/Clientes', icon: <Users size={16} /> },
-    { label: 'Produtos/Servicos', path: '/dashboard/Produtos', icon: <Box size={16} /> },
+    { label: 'Produtos', path: '/dashboard/Produtos', icon: <Box size={16} /> },
     { label: 'Pagamentos', path: '/dashboard/Pagamentos', icon: <CreditCard size={16} /> },
     { label: 'Relatórios', path: '/dashboard/Relatorios', icon: <BarChart size={16} /> },
     { label: 'Configurações', path: '/dashboard/Configuracoes', icon: <Settings size={16} /> },

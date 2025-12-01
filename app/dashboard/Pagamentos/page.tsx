@@ -135,9 +135,9 @@ export default function PagamentosPage() {
                 <td className="p-2">{p.invoiceId ? <span className="text-sm text-[#123859] font-medium">#{p.invoiceId}</span> : '—'}</td>
                 <td className="p-2 flex gap-2">
                   {/* Cada botão agora apenas navega usando ID */}
-                  <button onClick={() => router.push(`/dashboard/Pagamentos/${p.id}/conciliar`)} className="text-blue-600 hover:underline">Conciliar</button>
-                  <button onClick={() => router.push(`/dashboard/Pagamentos/${p.id}/ver`)} className="text-gray-600 hover:underline">Ver</button>
-                  <button onClick={() => router.push(`/dashboard/Pagamentos/${p.id}/apagar`)} className="text-red-500 hover:underline">Apagar</button>
+                  <button onClick={() => router.push(`/dashboard/Pagamentos/${p.id}/conciliar`)} className="text-gray-600 ">Conciliar</button>
+                  <button onClick={() => router.push(`/dashboard/Pagamentos/${p.id}/ver`)} className="text-gray-600">Ver</button>
+                  <button onClick={() => router.push(`/dashboard/Pagamentos/${p.id}/apagar`)} className="text-red-500">Apagar</button>
                 </td>
               </tr>
             ))}

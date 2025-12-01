@@ -27,7 +27,7 @@ export default function CancelarFaturaPage() {
         throw new Error(txt || 'Erro ao cancelar fatura');
       }
       setMessage('Fatura cancelada com sucesso.');
-      setTimeout(() => router.push('/Dashboard/Faturas'), 1000);
+      setTimeout(() => router.push('/dashboard/Faturas'), 1000);
     } catch (err: any) {
       console.error(err);
       setMessage(err.message || 'Erro desconhecido');
@@ -46,7 +46,7 @@ export default function CancelarFaturaPage() {
 
           <div className="flex justify-between">
             <button onClick={() => router.back()} className="px-4 py-2 border rounded">Voltar</button>
-            <button onClick={handleCancel} disabled={loading} className="px-4 py-2 bg-red-500 text-white rounded">
+            <button onClick={handleCancel} disabled={loading} className="px-4 py-2 bg-[#F9941F] text-white rounded">
               {loading ? 'Aguarde...' : 'Cancelar Fatura'}
             </button>
           </div>

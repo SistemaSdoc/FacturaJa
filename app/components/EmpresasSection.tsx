@@ -3,8 +3,8 @@ import React from "react";
 import { motion } from "framer-motion";
 
 const empresas = [
-  { name: "AngoTech", logo: "/logos/angotech.png", website: "https://angotech.ao" },
-  { name: "Cabenda Corp", logo: "/logos/cabenda.png", website: "https://cabenda.ao" },
+  { name: "AngoTech", logo: "/faturaja/public/images/Gestão de Clientes.webp", website: "https://angotech.ao" },
+  { name: "Cabenda Corp", logo: "../../images/Relatórios e Estatísticas.webp", website: "https://cabenda.ao" },
   { name: "IMCL", logo: "/logos/imcl.png", website: "https://imcl.ao" },
   { name: "EngePlus", logo: "/logos/engeplus.png", website: "https://engeplus.ao" },
   { name: "TechNova", logo: "/logos/technova.png", website: "https://technova.ao" },

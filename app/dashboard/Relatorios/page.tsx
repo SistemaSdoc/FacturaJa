@@ -202,7 +202,7 @@ export default function RelatoriosPage() {
                   <td className={`p-2 font-semibold ${f.status === 'Pago' ? 'text-green-500' : f.status === 'Pendente' ? 'text-yellow-500' : 'text-red-500'}`}>{f.status}</td>
                   <td className="p-2">{f.serie}</td>
                   <td className="p-2">
-                    <button onClick={() => router.push(`/dashboard/Relatorios/${f.id}/ver`)} className="text-blue-600 hover:underline flex items-center gap-1">
+                    <button onClick={() => router.push(`/dashboard/Relatorios/${f.id}/ver`)} className="text-blue-1000 flex items-center gap-1">
                       <FiEye /> Ver
                     </button>
                   </td>

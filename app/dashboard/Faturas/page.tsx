@@ -244,9 +244,9 @@ export default function FaturasPage() {
                 <td className={`p-2 font-semibold ${f.status === 'Pago' ? 'text-green-500' : f.status === 'Pendente' ? 'text-yellow-500' : 'text-red-500'}`}>{f.status}</td>
                 <td className="p-2">{f.serie}</td>
                 <td className="p-2 flex gap-2">
-                  <button onClick={() => router.push(`/dashboard/Faturas/${f.id}/ver`)} className="text-blue-500">Ver</button>
-                  <button onClick={() => router.push(`/dashboard/Faturas/${f.id}/editar`)} className="text-orange-500">Editar</button>
-                  <button onClick={() => router.push(`/dashboard/Faturas/${f.id}/pagar`)} className="text-purple-500">Pagar</button>
+                  <button onClick={() => router.push(`/dashboard/Faturas/${f.id}/ver`)} className="text-[#123859]">Ver</button>
+                  <button onClick={() => router.push(`/dashboard/Faturas/${f.id}/editar`)} className="text-[#123859]">Editar</button>
+                  <button onClick={() => router.push(`/dashboard/Faturas/${f.id}/pagar`)} className="text-[#F9941F]">Pagar</button>
                   <button onClick={() => router.push(`/dashboard/Faturas/${f.id}/cancelar`)} className="text-red-500">Cancelar</button>
                 </td>
               </tr>

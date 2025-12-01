@@ -126,19 +126,19 @@ export default function ClientesPage() {
                 <td className={`p-3 font-semibold ${c.status === 'Ativo' ? 'text-green-500' : 'text-red-500'}`}>{c.status}</td>
                 <td className="p-3 flex gap-2">
                   <button
-                    className="text-blue-500 "
+                    className="text-[#123859]"
                     onClick={() => router.push(`/dashboard/Clientes/${c.id}/ver`)}
                   >
                     Ver
                   </button>
                   <button
-                    className="text-orange-500 "
+                    className="text-[#F9941F]-500 "
                     onClick={() => router.push(`/dashboard/Clientes/${c.id}/editar`)}
                   >
                     Editar
                   </button>
                   <button
-                    className="text-red-500 "
+                    className="text-red-500"
                     onClick={() => router.push(`/dashboard/Clientes/${c.id}/apagar`)}
                   >
                     Apagar
