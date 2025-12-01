@@ -28,7 +28,6 @@ export default function MainCliente({ children }: MainClienteProps) {
   const [clientName, setClientName] = useState('Cliente');
   const [clientAvatar, setClientAvatar] = useState<string | null>(null);
   const [companyName, setCompanyName] = useState('Empresa X');
-
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
@@ -39,7 +38,7 @@ export default function MainCliente({ children }: MainClienteProps) {
       if (name) setClientName(name);
       if (avatar) setClientAvatar(avatar);
       if (company) setCompanyName(company);
-    } catch {}
+    } catch { }
   }, []);
 
   useEffect(() => {
@@ -87,7 +86,7 @@ export default function MainCliente({ children }: MainClienteProps) {
             </button>
           </div>
 
-          <nav className="flex flex-col gap-2">
+          <nav className="flex flex-col gap-2 relative">
             {menuItems.map(item => {
               const isActive = pathname === item.path || pathname?.startsWith(item.path + '/');
               const Icon = item.Icon;
@@ -96,13 +95,20 @@ export default function MainCliente({ children }: MainClienteProps) {
                   key={item.path}
                   onClick={() => router.push(item.path)}
                   className={`
-                    flex items-center gap-3 p-2 rounded transition-colors duration-150 group
-                    ${isActive ? 'bg-[#F9941F] text-[#F9941F]' : 'text-[#123859] hover:bg-[#F9941F] hover:text-white'}
+                    relative flex items-center gap-3 p-2 rounded transition-colors duration-150 group
                     ${!sidebarOpen ? 'justify-center' : ''}
                   `}
                 >
-                  <Icon className={`transition-colors duration-150 ${isActive ? 'text-[#123859]' : 'group-hover:text-white'}`} size={18} />
-                  <span className={`${!sidebarOpen ? 'hidden' : ''} transition-colors duration-150 ${isActive ? 'text-[#F9941F]' : 'group-hover:text-[#F9941F]'}`}>{item.label}</span>
+                  {/* Barra lateral colorida para item ativo */}
+                  {isActive && <span className="absolute left-0 top-0 h-full w-1 bg-[#F9941F] rounded-tr-lg rounded-br-lg"></span>}
+
+                  <Icon
+                    className={`transition-colors duration-150 ${isActive ? 'text-[#123859]' : 'text-[#123859] group-hover:text-[#F9941F]'}`}
+                    size={18}
+                  />
+                  <span className={`${!sidebarOpen ? 'hidden' : 'transition-colors duration-150'} ${isActive ? 'text-[#F9941F] font-semibold' : ''}`}>
+                    {item.label}
+                  </span>
                 </button>
               );
             })}
@@ -110,7 +116,7 @@ export default function MainCliente({ children }: MainClienteProps) {
         </div>
 
         <div className={`${!sidebarOpen ? 'flex justify-center' : ''}`}>
-          <button onClick={handleLogout} className="w-full px-3 py-2 rounded text-white bg-red-500 hover:brightness-95 flex items-center justify-center gap-2">
+          <button onClick={handleLogout} className="w-full px-3 py-2 rounded text-white bg-[#F9941F] hover:brightness-95 flex items-center justify-center gap-2">
             <LogOut size={16} />
             <span className={`${!sidebarOpen ? 'hidden' : ''}`}>Logout</span>
           </button>
@@ -150,12 +156,12 @@ export default function MainCliente({ children }: MainClienteProps) {
             <div className="relative" ref={notifRef}>
               <button onClick={() => setNotifOpen(n => !n)} className="p-2 rounded hover:bg-gray-100 relative">
                 <Bell size={18} className="text-[#123859]" />
-                <span className="absolute -top-1 -right-1 px-1.5 py-0.5 text-xs text-white bg-red-500 rounded-full">{notifications.length}</span>
+                <span className="absolute -top-1 -right-1 px-1.5 py-0.5 text-xs text-white bg-[#F9941F] rounded-full">{notifications.length}</span>
               </button>
 
               {notifOpen && (
                 <div className="absolute right-0 mt-2 w-80 bg-white rounded shadow-lg z-50">
-                  <div className="p-2 border-b text-sm font-medium text-[#123859]">Notificações</div>
+                  <div className="p-2 border-b text-sm font-medium text-[#F9941F]">Notificações</div>
                   <div className="p-2 flex flex-col gap-2 max-h-64 overflow-auto">
                     {notifications.map(n => (
                       <div key={n.id} className="px-3 py-2 rounded hover:bg-gray-50">
@@ -165,7 +171,7 @@ export default function MainCliente({ children }: MainClienteProps) {
                     ))}
                   </div>
                   <div className="p-2 border-t text-center">
-                    <button onClick={() => router.push('/cliente/notifications')} className="text-sm text-[#123859] hover:underline">Ver tudo</button>
+                    <button onClick={() => router.push('/cliente/notifications')} className="text-sm text-[#F9941F] hover:underline">Ver tudo</button>
                   </div>
                 </div>
               )}

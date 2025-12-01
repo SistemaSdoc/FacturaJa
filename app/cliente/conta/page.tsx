@@ -34,11 +34,16 @@ export default function ClienteContaPage() {
   const [cliente, setCliente] = useState<Cliente | null>(null);
   const [faturas, setFaturas] = useState<Fatura[]>([]);
   const [loading, setLoading] = useState(true);
-  const [mounted, setMounted] = useState(false); // novo
+  const [mounted, setMounted] = useState(false);
 
-  // marca que o componente está montado no client
+  const [clientAvatar, setClientAvatar] = useState<string | null>(null);
+
   useEffect(() => {
     setMounted(true);
+    try {
+      const avatar = localStorage.getItem('clientAvatar') || '';
+      if (avatar) setClientAvatar(avatar);
+    } catch {}
   }, []);
 
   // simula carregamento de dados
@@ -64,7 +69,6 @@ export default function ClienteContaPage() {
     router.push('/');
   };
 
-  // renderiza somente no client
   if (!mounted) return null;
 
   if (loading) return <p className="p-6 text-center">Carregando...</p>;
@@ -72,16 +76,20 @@ export default function ClienteContaPage() {
 
   return (
     <MainCliente>
-      <div className="bg-white shadow rounded p-6 mb-6">
-        <h1 className="text-2xl font-bold text-[#123859] mb-4">Perfil do Cliente</h1>
+      {/* PERFIL DO CLIENTE */}
+      <div className="bg-white shadow rounded p-6 mb-6 flex flex-col items-center">
+        <img
+          src={clientAvatar || '/images/default-avatar.png'}
+          alt="Avatar do Cliente"
+          className="w-24 h-24 rounded-full object-cover border-4 border-[#123859] transition-all duration-200 hover:scale-105 hover:border-[#F9941F] mb-4"
+        />
+        <h1 className="text-2xl font-bold text-[#123859] mb-2">Perfil do Cliente</h1>
         <p><strong>Nome:</strong> {cliente.nome}</p>
         <p><strong>Email:</strong> {cliente.email}</p>
         <p><strong>Telefone:</strong> {cliente.telefone}</p>
-        <button onClick={handleLogout} className="mt-4 bg-red-500 text-white px-4 py-2 rounded hover:brightness-95">
-          Logout
-        </button>
       </div>
 
+      {/* Faturas */}
       <div className="bg-white shadow rounded p-6">
         <h2 className="text-xl font-bold text-[#123859] mb-4">Minhas Faturas</h2>
         <div className="overflow-x-auto">

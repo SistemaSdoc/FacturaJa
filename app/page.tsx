@@ -565,7 +565,7 @@ export default function App() {
                             className={TAILWIND_CLASSES.buttonPrimary + " py-2 px-4 text-sm ml-4"}
                             style={{ backgroundColor: COLOR_PRIMARY, color: 'white' }}
                         >
-                            Começar Grátis
+                            Loguin
                         </Link>
                     </nav>
 

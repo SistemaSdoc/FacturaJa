@@ -1,7 +1,8 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import MainCliente from '../../../../components/MainCliente'; // ajuste o caminho conforme a pasta
+import MainCliente from '../../../../components/MainCliente';
+import * as XLSX from 'xlsx';
 
 type Status = 'Pago' | 'Pendente' | 'Cancelada';
 
@@ -66,6 +67,45 @@ export default function ViewInvoicePage() {
   const handleDownloadPDF = () => alert('Simular download PDF');
   const handlePay = () => alert('Simular pagamento (abrir checkout)');
 
+  const handleExportExcel = () => {
+    if (!fatura) return;
+
+    // Informações da fatura
+    const headerInfo = [
+      { Informação: 'Número da Fatura', Valor: fatura.numero },
+      { Informação: 'Cliente', Valor: fatura.cliente },
+      { Informação: 'Data', Valor: fatura.data },
+      { Informação: 'Vencimento', Valor: fatura.vencimento },
+      { Informação: 'Status', Valor: fatura.status },
+      {},
+    ];
+
+    // Itens
+    const itemsData = fatura.items.map(item => ({
+      Descrição: item.descricao,
+      Quantidade: item.quantidade,
+      'Preço Unitário (€)': item.precoUnitario.toFixed(2),
+      'Imposto (%)': item.impostoPercent,
+      Total: (item.quantidade * item.precoUnitario * (1 + item.impostoPercent/100)).toFixed(2)
+    }));
+
+    // Totais
+    const totalsData = [
+      {},
+      { Descrição: 'Subtotal', Total: computeTotals(fatura.items).subtotal.toFixed(2) },
+      { Descrição: 'Imposto', Total: computeTotals(fatura.items).imposto.toFixed(2) },
+      { Descrição: 'Total', Total: computeTotals(fatura.items).total.toFixed(2) },
+    ];
+
+    // Junta tudo
+    const wsData = [...headerInfo, ...itemsData, ...totalsData];
+
+    const ws = XLSX.utils.json_to_sheet(wsData, { skipHeader: false });
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, `Fatura ${fatura.numero}`);
+    XLSX.writeFile(wb, `Fatura_${fatura.numero}.xlsx`);
+  };
+
   if (loading) return <p className="p-6 text-center">Carregando fatura...</p>;
   if (!fatura) return <p className="p-6 text-center text-red-500">Fatura não encontrada.</p>;
 
@@ -128,7 +168,8 @@ export default function ViewInvoicePage() {
             <button onClick={handlePay} className="bg-[#F9941F] text-white px-4 py-2 rounded hover:brightness-95">Pagar</button>
           )}
           <button onClick={handlePrint} className="bg-[#123859] text-white px-4 py-2 rounded hover:brightness-95">Imprimir</button>
-          <button onClick={handleDownloadPDF} className="bg-gray-500 text-white px-4 py-2 rounded hover:brightness-95">Download PDF</button>
+          <button onClick={handleDownloadPDF} className="bg-[#123859] text-white px-4 py-2 rounded hover:brightness-95">Download PDF</button>
+          <button onClick={handleExportExcel} className="bg-green-600 text-white px-4 py-2 rounded hover:brightness-95">Exportar Excel</button>
         </div>
       </div>
     </MainCliente>
