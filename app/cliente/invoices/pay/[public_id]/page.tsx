@@ -1,9 +1,14 @@
 'use client';
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
-import MainCliente from '../../../../components/MainCliente';
+import React, { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import MainCliente from "../../../../components/MainCliente";
 
-type Status = 'Pago' | 'Pendente' | 'Cancelada';
+// ShadCN/UI imports (ajusta caminhos se necessário)
+import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+
+type Status = "Pago" | "Pendente" | "Cancelada";
 
 interface LineItem {
   id: number;
@@ -26,34 +31,37 @@ interface Fatura {
 
 export default function PayInvoicePage() {
   const { public_id } = useParams();
+  const router = useRouter();
   const [fatura, setFatura] = useState<Fatura | null>(null);
   const [loading, setLoading] = useState(true);
-  const [metodo, setMetodo] = useState<'Pix' | 'Cartão' | 'Boleto'>('Pix');
+  const [metodo, setMetodo] = useState<"Pix" | "Cartão" | "Boleto">("Pix");
 
   useEffect(() => {
     setLoading(true);
     const mockFatura: Fatura = {
       id: Number(public_id),
-      numero: '001',
-      cliente: 'João Silva',
-      data: '2025-11-01',
-      vencimento: '2025-11-10',
+      numero: "001",
+      cliente: "João Silva",
+      data: "2025-11-01",
+      vencimento: "2025-11-10",
       total: 120,
-      status: 'Pendente',
+      status: "Pendente",
       items: [
-        { id: 1, descricao: 'Produto A', quantidade: 2, precoUnitario: 30, impostoPercent: 0 },
-        { id: 2, descricao: 'Serviço B', quantidade: 1, precoUnitario: 60, impostoPercent: 0 },
+        { id: 1, descricao: "Produto A", quantidade: 2, precoUnitario: 30, impostoPercent: 0 },
+        { id: 2, descricao: "Serviço B", quantidade: 1, precoUnitario: 60, impostoPercent: 0 },
       ],
     };
-    setTimeout(() => {
+    const t = setTimeout(() => {
       setFatura(mockFatura);
       setLoading(false);
     }, 500);
+    return () => clearTimeout(t);
   }, [public_id]);
 
   const computeTotals = (items: LineItem[]) => {
-    let subtotal = 0, imposto = 0;
-    items.forEach(i => {
+    let subtotal = 0,
+      imposto = 0;
+    items.forEach((i) => {
       const line = i.quantidade * i.precoUnitario;
       subtotal += line;
       imposto += line * (i.impostoPercent / 100);
@@ -62,73 +70,129 @@ export default function PayInvoicePage() {
   };
 
   const handlePay = () => {
+    // Simulação; aqui integrarás com a tua API/checkout real
     alert(`Simulando pagamento via ${metodo} de €${fatura?.total.toFixed(2)}`);
+    // opcional: redirecionar para histórico ou página de sucesso
+    // router.push('/cliente/invoices');
   };
 
-  if (loading) return <p className="p-6 text-center text-primary dark:text-primary">Carregando fatura...</p>;
-  if (!fatura) return <p className="p-6 text-center text-red-500 dark:text-red-400">Fatura não encontrada.</p>;
+  if (loading) return <p className="p-6 text-center" style={{ color: "var(--primary)" }}>Carregando fatura...</p>;
+  if (!fatura) return <p className="p-6 text-center" style={{ color: "var(--primary)" }}>Fatura não encontrada.</p>;
 
   const totals = computeTotals(fatura.items);
 
+  // classes responsivas e que usam variáveis de tema
+  const cardClass = "w-full max-w-4xl mx-auto transition-colors duration-300";
+  const itemRowClass = "flex justify-between items-start gap-4 w-full";
+
   return (
     <MainCliente>
-      <div className="bg-surface dark:bg-surface shadow rounded p-6 max-w-4xl mx-auto transition-colors duration-300">
-        <h1 className="text-2xl font-bold text-accent dark:text-accent mb-4">Pagar Fatura {fatura.numero}</h1>
+      <Card className={cardClass}>
+        <CardHeader className="p-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <CardTitle className="text-2xl font-bold" style={{ color: "var(--accent)" }}>
+                Pagar Fatura #{fatura.numero}
+              </CardTitle>
+              <div className="mt-1 text-sm" style={{ color: "var(--primary)" }}>
+                <div><strong>Cliente:</strong> {fatura.cliente}</div>
+                <div><strong>Data:</strong> {fatura.data} &nbsp; <strong>Vencimento:</strong> {fatura.vencimento}</div>
+              </div>
+            </div>
 
-        <div className="mb-4 text-primary dark:text-primary">
-          <p><strong>Cliente:</strong> {fatura.cliente}</p>
-          <p><strong>Data / Vencimento:</strong> {fatura.data} / {fatura.vencimento}</p>
-        </div>
+            <div className="flex items-center gap-3">
+              <div className="text-right">
+                <div className="text-sm" style={{ color: "var(--primary)" }}>Subtotal</div>
+                <div className="text-lg font-semibold" style={{ color: "var(--primary)" }}>€ {totals.subtotal.toFixed(2)}</div>
+              </div>
+              <div className="text-right">
+                <div className="text-sm" style={{ color: "var(--primary)" }}>Imposto</div>
+                <div className="text-lg font-semibold" style={{ color: "var(--primary)" }}>€ {totals.imposto.toFixed(2)}</div>
+              </div>
+              <div className="text-right">
+                <div className="text-sm" style={{ color: "var(--primary)" }}>Total</div>
+                <div className="text-2xl font-bold" style={{ color: "var(--accent)" }}>€ {totals.total.toFixed(2)}</div>
+              </div>
+            </div>
+          </div>
+        </CardHeader>
 
-        <div className="mb-4">
-          <p className="font-semibold text-primary dark:text-primary mb-2">Itens:</p>
-          <ul className="mt-2 space-y-2">
-            {fatura.items.map(it => (
-              <li key={it.id} className="flex justify-between bg-bg dark:bg-bg p-2 rounded transition-colors duration-300">
-                <div>
-                  <div className="font-medium text-primary dark:text-primary">{it.descricao}</div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">{it.quantidade} × €{it.precoUnitario.toFixed(2)} ({it.impostoPercent}% imposto)</div>
+        <Separator />
+
+        <CardContent className="p-6">
+          {/* Items list (responsive) */}
+          <div className="space-y-3">
+            {fatura.items.map((it) => (
+              <div key={it.id} className={`${itemRowClass} bg-transparent md:bg-var(--card)`} >
+                <div className="flex-1">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <div className="font-medium" style={{ color: "var(--primary)" }}>{it.descricao}</div>
+                      <div className="text-sm" style={{ color: "var(--primary)" }}>
+                        {it.quantidade} x €{it.precoUnitario.toFixed(2)} {it.impostoPercent > 0 && `• ${it.impostoPercent}% imposto`}
+                      </div>
+                    </div>
+                    <div className="ml-2 text-sm font-medium" style={{ color: "var(--primary)" }}>
+                      € {(it.quantidade * it.precoUnitario * (1 + it.impostoPercent / 100)).toFixed(2)}
+                    </div>
+                  </div>
                 </div>
-                <div className="text-primary dark:text-primary">€ {(it.quantidade * it.precoUnitario * (1 + it.impostoPercent/100)).toFixed(2)}</div>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div className="text-right mb-6 text-primary dark:text-primary">
-          <p><strong>Subtotal:</strong> € {totals.subtotal.toFixed(2)}</p>
-          <p><strong>Imposto:</strong> € {totals.imposto.toFixed(2)}</p>
-          <p className="text-lg font-bold"><strong>Total:</strong> € {totals.total.toFixed(2)}</p>
-        </div>
-
-        <div className="mb-6">
-          <p className="font-semibold mb-2 text-primary dark:text-primary">Escolher método de pagamento:</p>
-          <div className="flex flex-col md:flex-row gap-2">
-            {['Pix', 'Cartão', 'Boleto'].map(m => (
-              <button
-                key={m}
-                onClick={() => setMetodo(m as 'Pix' | 'Cartão' | 'Boleto')}
-                className={`px-4 py-2 rounded transition-colors duration-200 ${
-                  metodo === m
-                    ? 'bg-[#D9961A] text-[#F5F5F5]'
-                    : 'bg-surface dark:bg-[#D9961A] text-[#F5F5F5] dark:text-primary'
-                }`}
-              >
-                {m}
-              </button>
+              </div>
             ))}
           </div>
-        </div>
 
-        <div className="flex justify-end">
-          <button
-            onClick={handlePay}
-            className="bg-primary dark:bg-[#D9961A] text-white px-6 py-2 rounded hover:brightness-95 transition-colors duration-200"
-          >
-            Pagar €{fatura.total.toFixed(2)}
-          </button>
-        </div>
-      </div>
+          <Separator className="my-6" />
+
+          {/* Métodos de pagamento - responsivo */}
+          <div className="mb-6">
+            <p className="font-semibold mb-3" style={{ color: "var(--primary)" }}>Escolher método de pagamento</p>
+
+            <div className="flex flex-col sm:flex-row gap-2">
+              {(["Pix", "Cartão", "Boleto"] as const).map((m) => {
+                const active = metodo === m;
+                return (
+                  <Button
+                    key={m}
+                    size="sm"
+                    variant={active ? undefined : "ghost"}
+                    onClick={() => setMetodo(m)}
+                    className={`px-4 py-2 rounded-md ${active ? "" : ""}`}
+                    style={
+                      active
+                        ? { background: "var(--accent)", color: "var(--text-on-dark)" }
+                        : { background: "var(--surface)", color: "var(--primary)" }
+                    }
+                  >
+                    {m}
+                  </Button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Mobile-friendly summary + pay */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <div className="text-sm" style={{ color: "var(--primary)" }}>Método selecionado:</div>
+              <div className="text-lg font-medium" style={{ color: "var(--accent)" }}>{metodo}</div>
+            </div>
+
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => router.push(`/cliente/invoices/view/${fatura.id}`)}>
+                Ver Fatura
+              </Button>
+
+              <Button
+                size="sm"
+                onClick={handlePay}
+                style={{ background: "var(--accent)", color: "var(--text-on-dark)" }}
+              >
+                Pagar €{fatura.total.toFixed(2)}
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </MainCliente>
   );
 }

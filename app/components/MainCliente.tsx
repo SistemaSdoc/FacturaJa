@@ -1,16 +1,7 @@
 "use client";
 import React, { ReactNode, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import {
-  Users,
-  FileSearch,
-  Bell,
-  LogOut,
-  Menu,
-  Search,
-  Settings,
-} from "lucide-react";
-import { useDarkMode } from "@/app/context/DarkModeProvider"; // ajuste se necessário
+import { Users, FileSearch, Bell, LogOut, Menu, Search, Settings } from "lucide-react";
 
 interface MainClienteProps {
   children: ReactNode;
@@ -30,8 +21,6 @@ export default function MainCliente({ children }: MainClienteProps) {
   const [clientAvatar, setClientAvatar] = useState<string | null>(null);
   const [companyName, setCompanyName] = useState("Empresa X");
   const [searchQuery, setSearchQuery] = useState("");
-
-  const { theme, resolvedTheme, toggleTheme, setTheme } = useDarkMode();
 
   useEffect(() => {
     try {
@@ -57,16 +46,8 @@ export default function MainCliente({ children }: MainClienteProps) {
 
   const menuItems = [
     { label: "Minha Conta", path: "/cliente/conta", Icon: Users },
-    {
-      label: "Faturas",
-      path: "/cliente/invoices/view/[public_id]",
-      Icon: FileSearch,
-    },
-    {
-      label: "Pagamentos",
-      path: "/cliente/invoices/pay/[public_id]",
-      Icon: FileSearch,
-    },
+    { label: "Faturas", path: "/cliente/invoices/view/[public_id]", Icon: FileSearch },
+    { label: "Pagamentos", path: "/cliente/invoices/pay/[public_id]", Icon: FileSearch },
     { label: "Configurações", path: "/cliente/configuracoes", Icon: Settings },
   ];
 
@@ -80,17 +61,10 @@ export default function MainCliente({ children }: MainClienteProps) {
     router.push("/");
   };
 
-  // Styles que usam as variáveis de tema
-  const appBg = { background: "var(--bg)", color: "var(--primary)" };
-  const surfaceStyle = {
-    background: "var(--surface)",
-    color: "var(--primary)",
-  };
-  const subtleBorder = { borderColor: "rgba(0,0,0,0.06)" };
   const accent = "var(--accent)";
 
   return (
-    <div className="flex min-h-screen" style={appBg}>
+    <div className="flex min-h-screen bg-var(--bg) text-var(--primary)">
       {/* SIDEBAR */}
       <aside
         className={`shadow-md p-4 flex flex-col justify-between transition-all duration-300 ${
@@ -100,15 +74,8 @@ export default function MainCliente({ children }: MainClienteProps) {
       >
         <div>
           <div className="flex items-center justify-between mb-6">
-            <div
-              className={`flex items-center gap-2 ${
-                !sidebarOpen ? "justify-center w-full" : ""
-              }`}
-            >
-              <div
-                className={` ${!sidebarOpen ? "hidden" : "font-bold text-lg"}`}
-                style={{ color: "var(--primary)" }}
-              >
+            <div className={`flex items-center gap-2 ${!sidebarOpen ? "justify-center w-full" : ""}`}>
+              <div className={`${!sidebarOpen ? "hidden" : "font-bold text-lg"}`} style={{ color: "var(--primary)" }}>
                 Cliente
               </div>
             </div>
@@ -124,43 +91,27 @@ export default function MainCliente({ children }: MainClienteProps) {
 
           <nav className="flex flex-col gap-2 relative">
             {menuItems.map((item) => {
-              const isActive =
-                pathname === item.path || pathname?.startsWith(item.path + "/");
+              const isActive = pathname === item.path || pathname?.startsWith(item.path + "/");
               const Icon = item.Icon;
               return (
                 <button
                   key={item.path}
                   onClick={() => router.push(item.path)}
-                  className={`
-                    relative flex items-center gap-3 p-2 rounded transition-colors duration-150 group
-                    ${!sidebarOpen ? "justify-center" : ""}
-                  `}
-                  style={{
-                    color: isActive ? "var(--accent)" : "var(--primary)",
-                  }}
+                  className={`relative flex items-center gap-3 p-2 rounded transition-colors duration-150 group ${
+                    !sidebarOpen ? "justify-center" : ""
+                  }`}
+                  style={{ color: isActive ? "var(--accent)" : "var(--primary)" }}
                 >
-                  {/* Barra lateral colorida para item ativo */}
                   {isActive && (
                     <span
                       style={{ backgroundColor: accent }}
                       className="absolute left-0 top-0 h-full w-1 rounded-tr-lg rounded-br-lg"
                     ></span>
                   )}
-
-                  <Icon
-                    size={18}
-                    style={{
-                      color: isActive ? "var(--accent)" : "var(--primary)",
-                    }}
-                  />
+                  <Icon size={18} style={{ color: isActive ? "var(--accent)" : "var(--primary)" }} />
                   <span
-                    className={`${
-                      !sidebarOpen ? "hidden" : "transition-colors duration-150"
-                    } ${isActive ? "" : ""}`}
-                    style={{
-                      color: isActive ? "var(--accent)" : "var(--primary)",
-                      fontWeight: isActive ? 600 : 500,
-                    }}
+                    className={`${!sidebarOpen ? "hidden" : "transition-colors duration-150"}`}
+                    style={{ color: isActive ? "var(--accent)" : "var(--primary)", fontWeight: isActive ? 600 : 500 }}
                   >
                     {item.label}
                   </span>
@@ -185,10 +136,7 @@ export default function MainCliente({ children }: MainClienteProps) {
       {/* MAIN */}
       <div className="flex-1 flex flex-col min-h-screen">
         {/* NAVBAR */}
-        <header
-          className="w-full shadow-md py-3 px-4 flex items-center justify-between"
-          style={{ background: "var(--surface)" }}
-        >
+        <header className="w-full shadow-md py-3 px-4 flex items-center justify-between" style={{ background: "var(--surface)" }}>
           <div className="flex items-center gap-4">
             <button
               aria-label="Alternar sidebar"
@@ -199,11 +147,7 @@ export default function MainCliente({ children }: MainClienteProps) {
             </button>
 
             <div className="flex items-center gap-2">
-              <img
-                src={clientAvatar || "/images/default-avatar.png"}
-                alt="Avatar do cliente"
-                className="w-9 h-9 rounded-full"
-              />
+              <img src={clientAvatar || "/images/default-avatar.png"} alt="Avatar do cliente" className="w-9 h-9 rounded-full" />
               <span className="font-bold" style={{ color: "var(--primary)" }}>
                 {companyName}
               </span>
@@ -211,11 +155,7 @@ export default function MainCliente({ children }: MainClienteProps) {
 
             <div
               className="hidden md:flex items-center gap-2 ml-4 rounded px-2 py-1"
-              style={{
-                background:
-                  "color-mix(in srgb, var(--surface) 85%, transparent)",
-                borderRadius: 8,
-              }}
+              style={{ background: "color-mix(in srgb, var(--surface) 85%, transparent)", borderRadius: 8 }}
             >
               <Search size={16} style={{ color: "var(--primary)" }} />
               <input
@@ -223,10 +163,7 @@ export default function MainCliente({ children }: MainClienteProps) {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter")
-                    router.push(
-                      `/cliente/conta?search=${encodeURIComponent(searchQuery)}`
-                    );
+                  if (e.key === "Enter") router.push(`/cliente/conta?search=${encodeURIComponent(searchQuery)}`);
                 }}
                 className="bg-transparent outline-none text-sm"
                 style={{ color: "var(--primary)" }}
@@ -237,67 +174,32 @@ export default function MainCliente({ children }: MainClienteProps) {
           <div className="flex items-center gap-3">
             {/* NOTIFICAÇÕES */}
             <div className="relative" ref={notifRef}>
-              <button
-                onClick={() => setNotifOpen((n) => !n)}
-                className="p-2 rounded hover:opacity-90 relative"
-              >
+              <button onClick={() => setNotifOpen((n) => !n)} className="p-2 rounded hover:opacity-90 relative">
                 <Bell size={18} style={{ color: "var(--primary)" }} />
-                <span
-                  className="absolute -top-1 -right-1 px-1.5 py-0.5 text-xs text-white rounded-full"
-                  style={{ background: "var(--accent)" }}
-                >
+                <span className="absolute -top-1 -right-1 px-1.5 py-0.5 text-xs text-white rounded-full" style={{ background: "var(--accent)" }}>
                   {notifications.length}
                 </span>
               </button>
 
               {notifOpen && (
-                <div
-                  className="absolute right-0 mt-2 w-80 rounded shadow-lg z-50"
-                  style={{ background: "var(--surface)" }}
-                >
-                  <div
-                    className="p-2 border-b text-sm font-medium"
-                    style={{
-                      color: "var(--accent)",
-                      borderBottomColor: "rgba(0,0,0,0.06)",
-                    }}
-                  >
+                <div className="absolute right-0 mt-2 w-80 rounded shadow-lg z-50" style={{ background: "var(--surface)" }}>
+                  <div className="p-2 border-b text-sm font-medium" style={{ color: "var(--accent)", borderBottomColor: "rgba(0,0,0,0.06)" }}>
                     Notificações
                   </div>
                   <div className="p-2 flex flex-col gap-2 max-h-64 overflow-auto">
                     {notifications.map((n) => (
-                      <div
-                        key={n.id}
-                        className="px-3 py-2 rounded"
-                        style={{ cursor: "default" }}
-                      >
-                        <div
-                          className="text-sm"
-                          style={{ color: "var(--primary)" }}
-                        >
+                      <div key={n.id} className="px-3 py-2 rounded" style={{ cursor: "default" }}>
+                        <div className="text-sm" style={{ color: "var(--primary)" }}>
                           {n.text}
                         </div>
-                        <div
-                          className="text-xs"
-                          style={{ color: "rgba(0,0,0,0.45)" }}
-                        >
+                        <div className="text-xs" style={{ color: "rgba(0,0,0,0.45)" }}>
                           {n.time}
                         </div>
                       </div>
                     ))}
                   </div>
-                  <div
-                    className="p-2"
-                    style={{
-                      borderTop: "1px solid rgba(0,0,0,0.06)",
-                      textAlign: "center",
-                    }}
-                  >
-                    <button
-                      onClick={() => router.push("/cliente/notificacoes")}
-                      className="text-sm hover:underline"
-                      style={{ color: "var(--accent)" }}
-                    >
+                  <div className="p-2" style={{ borderTop: "1px solid rgba(0,0,0,0.06)", textAlign: "center" }}>
+                    <button onClick={() => router.push("/cliente/notificacoes")} className="text-sm hover:underline" style={{ color: "var(--accent)" }}>
                       Ver tudo
                     </button>
                   </div>
@@ -307,56 +209,27 @@ export default function MainCliente({ children }: MainClienteProps) {
 
             {/* PROFILE */}
             <div className="relative" ref={profileRef}>
-              <button
-                onClick={() => setProfileOpen((p) => !p)}
-                className="flex items-center gap-3 rounded px-2 py-1 hover:opacity-90"
-              >
-                <div
-                  className="w-9 h-9 rounded-full overflow-hidden"
-                  style={{ background: "rgba(0,0,0,0.04)" }}
-                >
-                  <img
-                    src={clientAvatar || "/images/default-avatar.png"}
-                    alt="Avatar do cliente"
-                    className="rounded-full w-16 h-16"
-                  />
+              <button onClick={() => setProfileOpen((p) => !p)} className="flex items-center gap-3 rounded px-2 py-1 hover:opacity-90">
+                <div className="w-9 h-9 rounded-full overflow-hidden" style={{ background: "rgba(0,0,0,0.04)" }}>
+                  <img src={clientAvatar || "/images/default-avatar.png"} alt="Avatar do cliente" className="rounded-full w-16 h-16" />
                 </div>
-                <span
-                  className="hidden sm:inline font-medium truncate max-w-[10rem]"
-                  style={{ color: "var(--primary)" }}
-                >
+                <span className="hidden sm:inline font-medium truncate max-w-[10rem]" style={{ color: "var(--primary)" }}>
                   {clientName}
                 </span>
               </button>
 
               {profileOpen && (
-                <div
-                  className="absolute right-0 mt-2 w-48 rounded shadow-lg z-50"
-                  style={{ background: "var(--surface)" }}
-                >
-                  <div
-                    className="p-3"
-                    style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}
-                  >
-                    <div
-                      className="font-medium"
-                      style={{ color: "var(--primary)" }}
-                    >
+                <div className="absolute right-0 mt-2 w-48 rounded shadow-lg z-50" style={{ background: "var(--surface)" }}>
+                  <div className="p-3" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+                    <div className="font-medium" style={{ color: "var(--primary)" }}>
                       {clientName}
                     </div>
-                    <div
-                      className="text-xs"
-                      style={{ color: "rgba(0,0,0,0.45)" }}
-                    >
+                    <div className="text-xs" style={{ color: "rgba(0,0,0,0.45)" }}>
                       {companyName}
                     </div>
                   </div>
                   <div className="flex flex-col p-1">
-                    <button
-                      onClick={handleLogout}
-                      className="text-left px-4 py-2 hover:bg-transparent flex items-center gap-2"
-                      style={{ color: "#ef4444" }}
-                    >
+                    <button onClick={handleLogout} className="text-left px-4 py-2 hover:bg-transparent flex items-center gap-2" style={{ color: "#ef4444" }}>
                       <LogOut size={14} /> Logout
                     </button>
                   </div>

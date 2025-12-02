@@ -25,15 +25,16 @@ const getAuth0Client = async () => {
     throw new Error("Auth0 Domain ou Client ID não definidos. Verifique seu .env.local");
   }
 
-  auth0Client = await createAuth0Client({
-    domain: process.env.NEXT_PUBLIC_AUTH0_DOMAIN!,
-    clientId: process.env.NEXT_PUBLIC_AUTH0_CLIENT_ID!,
-    authorizationParams: {
-      redirect_uri: process.env.NEXT_PUBLIC_AUTH0_REDIRECT_URI!,
-    },
-    cacheLocation: "localstorage",
-    useRefreshTokens: true,
-  });
+auth0Client = await createAuth0Client({
+  domain: process.env.NEXT_PUBLIC_AUTH0_DOMAIN!,
+  clientId: process.env.NEXT_PUBLIC_AUTH0_CLIENT_ID!,
+  authorizationParams: {
+    redirect_uri: process.env.NEXT_PUBLIC_AUTH0_REDIRECT_URI!,
+  },
+  cacheLocation: "localstorage",
+  useRefreshTokens: true,
+});
+
 
   console.log("Auth0Client criado com sucesso!");
   return auth0Client;

@@ -1,117 +1,99 @@
 @import "tailwindcss";
+
+/* =============================
+   VARIANTES E PLUGINS
+============================= */
+
+@custom-variant dark (&:is(.dark *));
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* ---------------------------
-    Global base styles
+   VARIÁVEIS — TEMA CLARO
 --------------------------- */
+:root {
+  --primary: #123859;
+  --accent: #F9941F;
+  --background: #F2F2F2;
+  --surface: #E5E5E5;
 
+  --text-on-light: #123859;
+  --text-on-dark: #FFFFFF;
+
+  --radius: 0.625rem;
+
+  --card: var(--surface);
+  --card-foreground: var(--text-on-light);
+
+  --input: #D1D1D1;
+
+  --sidebar: #E5E5E5;
+  --sidebar-foreground: var(--text-on-light);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--text-on-dark);
+  --sidebar-accent: var(--accent);
+  --sidebar-accent-foreground: var(--text-on-dark);
+  --sidebar-border: hsl(220 13% 91%);
+  --sidebar-ring: hsl(217.2 91.2% 59.8%);
+}
+
+/* ---------------------------
+   VARIÁVEIS — TEMA ESCURO
+--------------------------- */
+.dark {
+  --primary: #F5F5F5;
+  --accent: #D9961A;
+  --background: #171717;
+  --surface: #0D0D0D;
+
+  --text-on-light: #0D0D0D;
+  --text-on-dark: #FFFFFF;
+
+  --card: var(--surface);
+  --card-foreground: var(--text-on-dark);
+
+  --sidebar: var(--surface);
+  --sidebar-foreground: var(--text-on-dark);
+  --sidebar-primary: var(--accent);
+  --sidebar-primary-foreground: var(--text-on-dark);
+  --sidebar-accent: var(--accent);
+  --sidebar-accent-foreground: var(--text-on-dark);
+  --sidebar-border: hsl(240 3.7% 15.9%);
+  --sidebar-ring: hsl(217.2 91.2% 59.8%);
+}
+
+/* ---------------------------
+   BASE GLOBAL
+--------------------------- */
 html,
 body,
 #__next {
   height: 100%;
   margin: 0;
   padding: 0;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* Transição suave para cores */
-  transition: background 0.45s ease, color 0.45s ease;
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
   line-height: 1.45;
+  transition: background 0.45s ease, color 0.45s ease;
 }
-
-/* ===============================
-    PALETA DE CORES: MODO CLARO
-=============================== */
-
-:root {
-  /* Cores Originais do Modo Claro */
-  --primary: #123859;
-  /* Azul-Escuro Forte (Cor de Texto Principal, Botões) */
-  --accent: #F9941F;
-  /* Laranja/Âmbar Intenso (Cor de Destaque, Títulos) */
-  --bg: #F2F2F2;
-  /* Cinza Muito Claro (Fundo estático da aplicação) */
-  --surface: #E5E5E5;
-  /* Cinza Intermédio (Fundo de Cartões, Secções) */
-  --text-on-light: #123859;
-  /* Cor de texto em fundos claros */
-  --text-on-dark: #FFFFFF;
-  /* Cor de texto em fundos escuros (e.g., sidebar) */
-
-  /* Cores do Gradiente (RGB) */
-  --g1: 18, 56, 89;
-  /* Azul-escuro */
-  --g2: 249, 148, 31;
-  /* Âmbar */
-  --g3: 242, 242, 242;
-  /* Fundo claro */
-}
-
-/* ===============================
-    PALETA DE CORES: MODO ESCURO
-=============================== */
-
-/*
-Suas Cores Solicitadas:
-#171717 -> Fundo Principal Escuro
-#D9961A -> Cor de Destaque (Accent no escuro)
-#F5F5F5 -> Cor do Texto Principal (Primary no escuro)
-#0D0D0D -> Fundo Mais Escuro (Surface no escuro)
-*/
-
-.dark {
-  /* Redefinição das variáveis para o Modo Escuro */
-  --primary: #F5F5F5;
-  /* Cor do Texto Principal (Inversão do primary do claro) */
-  --accent: #D9961A;
-  /* Laranja/Âmbar (Sutilmente diferente do claro) */
-  --bg: #171717;
-  /* Fundo Escuro Principal */
-  --surface: #0D0D0D;
-  /* Fundo Mais Escuro (para Cartões, Secções) */
-  --text-on-light: #0D0D0D;
-  /* Cor de texto em fundos claros (sidebar, botões) */
-  --text-on-dark: #FFFFFF;
-  /* Cor de texto em fundos escuros */
-
-  /* Cores do Gradiente (Ajustadas para Escuro, mantendo o g2 como accent) */
-  --g1: 23, 23, 23;
-  /* Fundo Escuro Principal (Base do #171717) */
-  --g2: 217, 150, 26;
-  /* Âmbar do Dark Mode */
-  --g3: 13, 13, 13;
-  /* Fundo Mais Escuro (Base do #0D0D0D) */
-}
-
-/* ---------------------------
-    Fundo principal com gradiente
---------------------------- */
 
 body {
-  /* O gradiente agora usará as variáveis redefinidas no .dark */
-  background: linear-gradient(135deg,
-      rgba(var(--g1), 0.2) 0%,
-      rgba(var(--g2), 0.1) 50%,
-      rgba(var(--g3), 0.05) 100%);
-  background-attachment: fixed;
-  background-size: cover;
-  /* O texto principal do body usa a nova cor --primary (claro/escuro) */
+  background-color: var(--background);
   color: var(--primary);
 }
 
 /* ---------------------------
-    Tipografia (usa as novas variáveis)
+   TIPOGRAFIA
 --------------------------- */
-
 h1,
 h2,
 h3,
 h4,
 h5,
 h6 {
-  /* Títulos usam a cor de destaque (accent) */
   color: var(--accent);
   font-weight: 700;
 }
@@ -120,144 +102,21 @@ p,
 a,
 span,
 label {
-  /* Textos gerais usam a cor principal (primary) */
   color: var(--primary);
   font-weight: 500;
 }
 
-/* Footer: Corrigido para usar a nova variável do tema escuro */
-footer *:not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(svg):not(img):not(span) {
-  /* No modo claro, a cor é #FFFFFF, mas como o footer provavelmente fica em um fundo escuro,
-     usaremos a variável genérica para texto em fundo escuro, garantindo legibilidade. */
-  color: var(--text-on-dark) !important;
-}
-
-/* Ajuste em classes específicas para usarem as novas variáveis */
-.location {
-  color: var(--accent) !important;
-}
-
-.location1 {
-  /* Deve ser a cor de superfície do tema atual */
-  color: var(--surface) !important;
-}
-
-/* Sidebar: Garante que o texto seja sempre claro, independente do modo. */
-.sidebar {
-  color: var(--text-on-dark);
-  /* Letras brancas */
-}
-
-.sidebar a {
-  color: inherit;
-  /* Links herdam a cor branca */
-  text-decoration: none;
-  transition: color 0.2s;
-}
-
-.sidebar a:hover {
-  color: var(--accent);
-  /* Hover laranja (accent) */
-}
-
 /* ---------------------------
-    Cards e containers
+   BOTÕES
 --------------------------- */
-
-.bg-card {
-  /* Fundos de cartões usam a cor de superfície (surface) */
-  background-color: var(--surface);
-  border: 2px solid var(--accent);
-  color: var(--primary);
-  transition: background-color 0.35s ease, border-color 0.35s ease, color 0.35s ease;
-  border-radius: 12px;
-  /* Sombra mais escura no modo escuro */
-  box-shadow: 0 4px 16px rgba(18, 56, 89, 0.1);
-}
-
-.dark .bg-card {
-  /* Ajusta a sombra do card no modo escuro para ser mais sutil */
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-}
-
-.container-fixed {
-  max-width: 1200px;
-  margin-left: auto;
-  margin-right: auto;
-  padding: 1rem;
-}
-
-/* ---------------------------
-    Gradiente animado leve
---------------------------- */
-
-@keyframes gradientShift {
-  0% {
-    background-position: 0% 50%;
-  }
-
-  50% {
-    background-position: 100% 50%;
-  }
-
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-.page-gradient {
-  /* O gradiente agora usará as variáveis g1, g2, g3 */
-  background: linear-gradient(120deg,
-      rgba(var(--g1), 0.2) 0%,
-      rgba(var(--g2), 0.15) 50%,
-      rgba(var(--g3), 0.1) 100%);
-  background-size: 300% 300%;
-  animation: gradientShift 12s ease infinite;
-  filter: blur(32px) saturate(120%);
-}
-
-/* ---------------------------
-    Overlay leve (ajustado para escuro)
---------------------------- */
-
-.bg-overlay {
-  /* Overlay branco e transparente no modo claro */
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.95));
-}
-
-.dark .bg-overlay {
-  /* Overlay escuro e transparente no modo escuro */
-  background: linear-gradient(180deg, rgba(10, 10, 10, 0.85), rgba(10, 10, 10, 0.95));
-}
-
-/* ---------------------------
-    Foco
---------------------------- */
-
-:focus {
-  outline: none;
-}
-
-:focus-visible {
-  /* A sombra de foco usa a cor de destaque (accent) */
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 50%, transparent);
-  border-radius: 6px;
-}
-
-/* ---------------------------
-    Botões padrão
---------------------------- */
-
 .btn-primary {
   background-color: var(--primary);
   color: var(--text-on-dark);
-  /* Texto sempre claro no fundo principal */
   padding: 0.6rem 1.2rem;
-  border-radius: 10px;
+  border-radius: var(--radius);
   font-weight: 600;
   transition: 0.3s ease;
 }
-
 .btn-primary:hover {
   background-color: var(--accent);
   transform: translateY(-1px);
@@ -266,45 +125,108 @@ footer *:not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(svg):not(img):not(s
 .btn-accent {
   background-color: var(--accent);
   color: var(--text-on-dark);
-  /* Texto sempre claro no fundo de destaque */
   padding: 0.6rem 1.2rem;
-  border-radius: 10px;
+  border-radius: var(--radius);
   font-weight: 600;
   transition: 0.3s ease;
 }
-
 .btn-accent:hover {
   background-color: var(--primary);
   transform: translateY(-1px);
 }
 
 /* ---------------------------
-    Motion preference
+   CARDS
 --------------------------- */
-
-@media (prefers-reduced-motion: reduce) {
-  .page-gradient {
-    animation: none;
-  }
+.bg-card {
+  background-color: var(--card);
+  color: var(--card-foreground);
+  border-radius: var(--radius);
+  border: 2px solid var(--accent);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.35s ease, border-color 0.35s ease,
+    color 0.35s ease;
 }
 
-@keyframes gradientMove {
-  0% {
-    background-position: 0% 50%;
-  }
-
-  50% {
-    background-position: 100% 50%;
-  }
-
-  100% {
-    background-position: 0% 50%;
-  }
+.dark .bg-card {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
-.bg-animated-gradient {
-  /* Gradiente animado que usa as variáveis do tema atual */
-  background: linear-gradient(-45deg, var(--bg), var(--surface), color-mix(in srgb, var(--primary) 25%, transparent), color-mix(in srgb, var(--accent) 25%, transparent));
-  background-size: 400% 400%;
-  animation: gradientMove 15s ease infinite;
+/* ---------------------------
+   SIDEBAR
+--------------------------- */
+.sidebar {
+  color: var(--sidebar-foreground);
+}
+
+.sidebar a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.sidebar a:hover {
+  color: var(--accent);
+}
+
+/* ---------------------------
+   FOCUS
+--------------------------- */
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  box-shadow: 0 0 0 3px var(--ring);
+  border-radius: var(--radius);
+}
+
+/* ---------------------------
+   CONTAINERS
+--------------------------- */
+.container-fixed {
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 1rem;
+}
+
+/* ---------------------------
+   TAILWIND VARIABLES INLINE
+--------------------------- */
+@theme inline {
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/* ---------------------------
+   BASE LAYOUT TAILWIND
+--------------------------- */
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  input,
+  textarea,
+  select,
+  button {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    outline: none;
+    padding: 0.5rem 0.75rem;
+  }
+
+  input:focus,
+  textarea:focus,
+  select:focus,
+  button:focus {
+    box-shadow: 0 0 0 3px var(--ring);
+  }
 }
