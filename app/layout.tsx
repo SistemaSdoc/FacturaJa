@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { DarkModeProvider } from "./context/DarkModeProvider"; // <-- import do provider
+import { DarkModeProvider } from "./context/DarkModeProvider"; // Client Component
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

@@ -1,7 +1,7 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import MainCliente from '../../../../components/MainCliente'; // ajuste o caminho conforme a pasta
+import MainCliente from '../../../../components/MainCliente';
 
 type Status = 'Pago' | 'Pendente' | 'Cancelada';
 
@@ -63,53 +63,56 @@ export default function PayInvoicePage() {
 
   const handlePay = () => {
     alert(`Simulando pagamento via ${metodo} de €${fatura?.total.toFixed(2)}`);
-    // Aqui você chamaria POST /api/payments/public
   };
 
-  if (loading) return <p className="p-6 text-center">Carregando fatura...</p>;
-  if (!fatura) return <p className="p-6 text-center text-red-500">Fatura não encontrada.</p>;
+  if (loading) return <p className="p-6 text-center text-primary dark:text-primary">Carregando fatura...</p>;
+  if (!fatura) return <p className="p-6 text-center text-red-500 dark:text-red-400">Fatura não encontrada.</p>;
 
   const totals = computeTotals(fatura.items);
 
   return (
     <MainCliente>
-      <div className="bg-white shadow rounded p-6 max-w-4xl mx-auto">
-        <h1 className="text-2xl font-bold text-[#123859] mb-4">Pagar Fatura {fatura.numero}</h1>
+      <div className="bg-surface dark:bg-surface shadow rounded p-6 max-w-4xl mx-auto transition-colors duration-300">
+        <h1 className="text-2xl font-bold text-accent dark:text-accent mb-4">Pagar Fatura {fatura.numero}</h1>
 
-        <div className="mb-4">
+        <div className="mb-4 text-primary dark:text-primary">
           <p><strong>Cliente:</strong> {fatura.cliente}</p>
           <p><strong>Data / Vencimento:</strong> {fatura.data} / {fatura.vencimento}</p>
         </div>
 
         <div className="mb-4">
-          <p className="font-semibold">Itens:</p>
+          <p className="font-semibold text-primary dark:text-primary mb-2">Itens:</p>
           <ul className="mt-2 space-y-2">
             {fatura.items.map(it => (
-              <li key={it.id} className="flex justify-between bg-[#F2F2F2] p-2 rounded">
+              <li key={it.id} className="flex justify-between bg-bg dark:bg-bg p-2 rounded transition-colors duration-300">
                 <div>
-                  <div className="font-medium">{it.descricao}</div>
-                  <div className="text-sm text-gray-500">{it.quantidade} × €{it.precoUnitario.toFixed(2)} ({it.impostoPercent}% imposto)</div>
+                  <div className="font-medium text-primary dark:text-primary">{it.descricao}</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">{it.quantidade} × €{it.precoUnitario.toFixed(2)} ({it.impostoPercent}% imposto)</div>
                 </div>
-                <div>€ {(it.quantidade * it.precoUnitario * (1 + it.impostoPercent/100)).toFixed(2)}</div>
+                <div className="text-primary dark:text-primary">€ {(it.quantidade * it.precoUnitario * (1 + it.impostoPercent/100)).toFixed(2)}</div>
               </li>
             ))}
           </ul>
         </div>
 
-        <div className="text-right mb-6">
+        <div className="text-right mb-6 text-primary dark:text-primary">
           <p><strong>Subtotal:</strong> € {totals.subtotal.toFixed(2)}</p>
           <p><strong>Imposto:</strong> € {totals.imposto.toFixed(2)}</p>
           <p className="text-lg font-bold"><strong>Total:</strong> € {totals.total.toFixed(2)}</p>
         </div>
 
         <div className="mb-6">
-          <p className="font-semibold mb-2">Escolher método de pagamento:</p>
+          <p className="font-semibold mb-2 text-primary dark:text-primary">Escolher método de pagamento:</p>
           <div className="flex flex-col md:flex-row gap-2">
             {['Pix', 'Cartão', 'Boleto'].map(m => (
               <button
                 key={m}
                 onClick={() => setMetodo(m as 'Pix' | 'Cartão' | 'Boleto')}
-                className={`px-4 py-2 rounded ${metodo === m ? 'bg-[#F9941F] text-white' : 'bg-[#E5E5E5] text-[#123859]'}`}
+                className={`px-4 py-2 rounded transition-colors duration-200 ${
+                  metodo === m
+                    ? 'bg-[#D9961A] text-[#F5F5F5]'
+                    : 'bg-surface dark:bg-[#D9961A] text-[#F5F5F5] dark:text-primary'
+                }`}
               >
                 {m}
               </button>
@@ -120,7 +123,7 @@ export default function PayInvoicePage() {
         <div className="flex justify-end">
           <button
             onClick={handlePay}
-            className="bg-[#123859] text-white px-6 py-2 rounded hover:brightness-95"
+            className="bg-primary dark:bg-[#D9961A] text-white px-6 py-2 rounded hover:brightness-95 transition-colors duration-200"
           >
             Pagar €{fatura.total.toFixed(2)}
           </button>

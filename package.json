@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@auth0/auth0-spa-js": "^2.9.1",
     "chart.js": "^4.5.1",
     "framer-motion": "^12.23.24",
     "jspdf": "^3.0.4",

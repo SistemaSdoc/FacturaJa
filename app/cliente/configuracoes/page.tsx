@@ -2,6 +2,10 @@
 import React, { useState } from "react";
 import MainCliente from "../../components/MainCliente"; // ajuste o caminho conforme sua pasta
 import { FaUser, FaKey, FaGlobe } from "react-icons/fa";
+// IMPORT DO HOOK: ajuste o caminho conforme a tua estrutura.
+// Se o provider está em src/app/context/DarkModeProvider.tsx, então talvez precise ser:
+// import { useDarkMode } from "@/app/context/DarkModeProvider";
+import { useDarkMode } from "../../context/DarkModeProvider"; // <<-- ajuste se necessário
 
 export default function ClientConfig() {
   const [name, setName] = useState("João Cliente");
@@ -10,7 +14,9 @@ export default function ClientConfig() {
   const [language, setLanguage] = useState("pt");
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [notifications, setNotifications] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
+
+  // usa o contexto global de tema
+  const { theme, resolvedTheme, setTheme, toggleTheme } = useDarkMode();
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,28 +31,51 @@ export default function ClientConfig() {
     }
   };
 
+  // helpers para estilos do toggle usando variáveis CSS (funciona tanto no claro quanto escuro)
+  const switchBg = resolvedTheme === 'dark' ? 'var(--accent)' : 'rgba(0,0,0,0.18)';
+  const cardBg = 'var(--surface)'; // cards usam --surface
+  const cardBorder = '2px solid rgba(0,0,0,0.04)'; // fallback — visual leve
+  const textColor = 'var(--primary)';
+
   return (
     <MainCliente>
-      <div className="min-h-screen bg-[#F2F2F2] text-[#123859] p-4 lg:p-6 transition-colors duration-300">
-        <h1 className="text-2xl font-bold mb-6">Configurações da Conta</h1>
+      <div
+        className="min-h-screen p-4 lg:p-6 transition-colors duration-300"
+        style={{
+          background: 'var(--bg)', // usa variáveis do tema
+          color: textColor,
+        }}
+      >
+        <h1 className="text-2xl font-bold mb-6" style={{ color: 'var(--accent)' }}>
+          Configurações da Conta
+        </h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Perfil */}
-          <div className="bg-white p-6 rounded-2xl shadow border border-[#E5E5E5]">
-            <h2 className="text-xl font-semibold mb-4">Perfil</h2>
+          <div
+            className="p-6 rounded-2xl shadow"
+            style={{
+              background: cardBg,
+              border: cardBorder,
+              color: 'var(--primary)',
+            }}
+          >
+            <h2 className="text-xl font-semibold mb-4" style={{ color: 'var(--accent)' }}>
+              Perfil
+            </h2>
 
             {/* Foto de Perfil */}
             <div className="flex flex-col items-center mb-4">
-              <div className="w-24 h-24 rounded-full overflow-hidden mb-2 border-2 border-[#123859]">
+              <div className="w-24 h-24 rounded-full overflow-hidden mb-2 border-2" style={{ borderColor: 'var(--primary)' }}>
                 {profileImage ? (
                   <img src={profileImage} alt="Foto de perfil" className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-[#E5E5E5] text-[#123859] font-bold">
+                  <div className="w-full h-full flex items-center justify-center" style={{ background: 'var(--surface)', color: 'var(--primary)', fontWeight: 700 }}>
                     JD
                   </div>
                 )}
               </div>
-              <label className="bg-[#E5E5E5] text-[#123859] px-3 py-1 rounded-lg cursor-pointer hover:bg-[#d1d5db]">
+              <label className="px-3 py-1 rounded-lg cursor-pointer" style={{ background: 'var(--surface)', color: 'var(--primary)' }}>
                 Alterar Foto
                 <input type="file" accept="image/*" className="hidden" onChange={handleProfileImageChange} />
               </label>
@@ -56,13 +85,14 @@ export default function ClientConfig() {
             <form onSubmit={handleSave} className="flex flex-col gap-4">
               <div className="flex flex-col">
                 <label className="text-sm font-medium mb-1">Nome</label>
-                <div className="flex items-center gap-2 border rounded-lg p-2">
+                <div className="flex items-center gap-2 border rounded-lg p-2" style={{ borderColor: 'rgba(0,0,0,0.06)' }}>
                   <FaUser className="text-gray-400" />
                   <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="flex-1 outline-none bg-transparent text-[#123859]"
+                    className="flex-1 outline-none bg-transparent"
+                    style={{ color: 'var(--primary)' }}
                     placeholder="Digite seu nome"
                   />
                 </div>
@@ -74,20 +104,22 @@ export default function ClientConfig() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="border rounded-lg p-2 outline-none bg-transparent text-[#123859]"
+                  className="border rounded-lg p-2 outline-none bg-transparent"
+                  style={{ borderColor: 'rgba(0,0,0,0.06)', color: 'var(--primary)' }}
                   placeholder="Digite seu email"
                 />
               </div>
 
               <div className="flex flex-col">
                 <label className="text-sm font-medium mb-1">Senha</label>
-                <div className="flex items-center gap-2 border rounded-lg p-2">
+                <div className="flex items-center gap-2 border rounded-lg p-2" style={{ borderColor: 'rgba(0,0,0,0.06)' }}>
                   <FaKey className="text-gray-400" />
                   <input
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="flex-1 outline-none bg-transparent text-[#123859]"
+                    className="flex-1 outline-none bg-transparent"
+                    style={{ color: 'var(--primary)' }}
                     placeholder="Nova senha"
                   />
                 </div>
@@ -95,7 +127,8 @@ export default function ClientConfig() {
 
               <button
                 type="submit"
-                className="bg-[#F9941F] text-white px-4 py-2 rounded-lg hover:bg-[#e68a00]"
+                className="px-4 py-2 rounded-lg hover:opacity-95"
+                style={{ background: 'var(--accent)', color: 'var(--text-on-dark)' }}
               >
                 Salvar Alterações
               </button>
@@ -103,42 +136,63 @@ export default function ClientConfig() {
           </div>
 
           {/* Preferências */}
-          <div className="bg-white p-6 rounded-2xl shadow border border-[#E5E5E5] flex flex-col gap-4">
-            <h2 className="text-xl font-semibold mb-4">Preferências</h2>
+          <div
+            className="p-6 rounded-2xl shadow flex flex-col gap-4"
+            style={{
+              background: cardBg,
+              border: cardBorder,
+              color: 'var(--primary)',
+            }}
+          >
+            <h2 className="text-xl font-semibold mb-4" style={{ color: 'var(--accent)' }}>
+              Preferências
+            </h2>
 
             {/* Modo Escuro Toggle */}
-            <div className="flex justify-between items-center border rounded-lg p-3">
+            <div className="flex justify-between items-center border rounded-lg p-3" style={{ borderColor: 'rgba(0,0,0,0.06)' }}>
               <span>Modo Escuro</span>
               <div
-                className={`w-12 h-6 flex items-center rounded-full p-1 cursor-pointer ${darkMode ? "bg-green-500" : "bg-gray-300"}`}
-                onClick={() => setDarkMode(!darkMode)}
+                role="button"
+                tabIndex={0}
+                onClick={() => toggleTheme()}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') toggleTheme(); }}
+                className="w-12 h-6 flex items-center rounded-full p-1 cursor-pointer"
+                style={{ background: switchBg }}
+                aria-pressed={resolvedTheme === 'dark'}
+                title={`Tema atual: ${resolvedTheme}`}
               >
                 <div
-                  className={`bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ${darkMode ? "translate-x-6" : ""}`}
-                ></div>
+                  className={`bg-white w-4 h-4 rounded-full shadow-md transform duration-300`}
+                  style={{
+                    transform: resolvedTheme === 'dark' ? 'translateX(1.2rem)' : 'translateX(0)',
+                  }}
+                />
               </div>
             </div>
 
             {/* Notificações Toggle */}
-            <div className="flex justify-between items-center border rounded-lg p-3">
+            <div className="flex justify-between items-center border rounded-lg p-3" style={{ borderColor: 'rgba(0,0,0,0.06)' }}>
               <span>Receber Notificações</span>
               <div
-                className={`w-12 h-6 flex items-center rounded-full p-1 cursor-pointer ${notifications ? "bg-green-500" : "bg-gray-300"}`}
+                className={`w-12 h-6 flex items-center rounded-full p-1 cursor-pointer`}
                 onClick={() => setNotifications(!notifications)}
+                style={{ background: notifications ? 'var(--accent)' : 'rgba(0,0,0,0.18)' }}
               >
                 <div
-                  className={`bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ${notifications ? "translate-x-6" : ""}`}
+                  className={`bg-white w-4 h-4 rounded-full shadow-md transform duration-300`}
+                  style={{ transform: notifications ? 'translateX(1.2rem)' : 'translateX(0)' }}
                 ></div>
               </div>
             </div>
 
             {/* Idioma */}
-            <div className="flex justify-between items-center border rounded-lg p-3">
+            <div className="flex justify-between items-center border rounded-lg p-3" style={{ borderColor: 'rgba(0,0,0,0.06)' }}>
               <span className="flex items-center gap-2"><FaGlobe /> Idioma</span>
               <select
                 value={language}
                 onChange={(e) => setLanguage(e.target.value)}
-                className="border rounded-lg p-1 outline-none text-[#123859] bg-transparent"
+                className="border rounded-lg p-1 outline-none bg-transparent"
+                style={{ color: 'var(--primary)', borderColor: 'rgba(0,0,0,0.06)' }}
               >
                 <option value="pt">Português</option>
                 <option value="en">English</option>
@@ -147,7 +201,7 @@ export default function ClientConfig() {
             </div>
 
             {/* Resetar Conta */}
-            <button className="mt-4 bg-[#F9941F] text-white px-4 py-2 rounded-lg hover:bg-[#e68a00]">
+            <button className="mt-4 px-4 py-2 rounded-lg hover:opacity-95" style={{ background: 'var(--accent)', color: 'var(--text-on-dark)' }}>
               Resetar Conta
             </button>
           </div>

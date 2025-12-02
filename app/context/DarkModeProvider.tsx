@@ -1,58 +1,117 @@
 'use client';
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-interface DarkModeContextType {
-  darkMode: boolean;
-  toggleDarkMode: () => void;
-}
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+  useCallback,
+} from 'react';
 
-const DarkModeContext = createContext<DarkModeContextType | undefined>(undefined);
+type Theme = 'light' | 'dark' | 'system';
 
-export const DarkModeProvider = ({ children }: { children: ReactNode }) => {
-  const [darkMode, setDarkMode] = useState(false);
+type ContextValue = {
+  theme: Theme;
+  resolvedTheme: 'light' | 'dark';
+  setTheme: (t: Theme) => void;
+  toggleTheme: () => void;
+};
 
-  // Inicializa o modo escuro baseado no localStorage
+const KEY = 'theme'; // chave no localStorage
+const DarkModeContext = createContext<ContextValue | undefined>(undefined);
+
+export function DarkModeProvider({ children }: { children: ReactNode }) {
+  const [theme, setThemeState] = useState<Theme>('system');
+  const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
+
+  const resolve = useCallback((t: Theme) => {
+    if (t === 'system') {
+      try {
+        return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+          ? 'dark'
+          : 'light';
+      } catch {
+        return 'light';
+      }
+    }
+    return t === 'dark' ? 'dark' : 'light';
+  }, []);
+
+  // lê preferências no mount
   useEffect(() => {
-    const savedMode = localStorage.getItem('darkMode');
-    if (savedMode === 'true') {
-      setDarkMode(true);
-      document.body.classList.add('dark');
-      document.body.classList.remove('light');
-    } else {
-      setDarkMode(false);
-      document.body.classList.remove('dark');
-      document.body.classList.add('light');
+    try {
+      const saved = localStorage.getItem(KEY) as Theme | null;
+      if (saved === 'light' || saved === 'dark' || saved === 'system') {
+        setThemeState(saved);
+      } else {
+        setThemeState('system');
+      }
+    } catch {
+      setThemeState('system');
     }
   }, []);
 
-  const toggleDarkMode = () => {
-    setDarkMode((prev) => {
-      const newMode = !prev;
-      localStorage.setItem('darkMode', newMode.toString());
+  // aplica a classe e observa prefers-color-scheme se for 'system'
+  useEffect(() => {
+    const r = resolve(theme);
+    setResolvedTheme(r);
 
-      // Aplica classes no body
-      if (newMode) {
-        document.body.classList.add('dark');
-        document.body.classList.remove('light');
-      } else {
-        document.body.classList.remove('dark');
-        document.body.classList.add('light');
+    const el = document.documentElement;
+    if (r === 'dark') el.classList.add('dark');
+    else el.classList.remove('dark');
+
+    try {
+      localStorage.setItem(KEY, theme);
+    } catch {
+      // ignore
+    }
+
+    let mql: MediaQueryList | null = null;
+    const handleChange = () => {
+      if (theme === 'system') {
+        const newR = resolve('system');
+        setResolvedTheme(newR);
+        if (newR === 'dark') el.classList.add('dark');
+        else el.classList.remove('dark');
       }
+    };
 
-      return newMode;
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      mql = window.matchMedia('(prefers-color-scheme: dark)');
+      mql.addEventListener?.('change', handleChange);
+      mql.addListener?.(handleChange); // fallback older browsers
+    }
+
+    return () => {
+      if (mql) {
+        mql.removeEventListener?.('change', handleChange);
+        mql.removeListener?.(handleChange);
+      }
+    };
+  }, [theme, resolve]);
+
+  const setTheme = (t: Theme) => setThemeState(t);
+
+  const toggleTheme = () =>
+    setThemeState(prev => {
+      const next = prev === 'dark' ? 'light' : 'dark';
+      try {
+        localStorage.setItem(KEY, next);
+      } catch {}
+      return next;
     });
-  };
 
   return (
-    <DarkModeContext.Provider value={{ darkMode, toggleDarkMode }}>
+    <DarkModeContext.Provider value={{ theme, resolvedTheme, setTheme, toggleTheme }}>
       {children}
     </DarkModeContext.Provider>
   );
-};
+}
 
-// Hook para usar DarkMode em qualquer componente
-export const useDarkMode = () => {
-  const context = useContext(DarkModeContext);
-  if (!context) throw new Error('useDarkMode must be used within DarkModeProvider');
-  return context;
-};
+// hook de utilidade
+export function useDarkMode() {
+  const ctx = useContext(DarkModeContext);
+  if (!ctx) throw new Error('useDarkMode must be used inside DarkModeProvider');
+  return ctx;
+}
