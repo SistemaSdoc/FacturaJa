@@ -2,6 +2,9 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import MainAdmin from '../../components/MainAdmin';
+import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 
 interface Empresa {
   id: number;
@@ -12,7 +15,7 @@ interface Empresa {
 }
 
 export default function AdminEmpresasPage() {
-  const router = useRouter(); // <- importante!
+  const router = useRouter();
   const [empresas, setEmpresas] = useState<Empresa[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -39,81 +42,73 @@ export default function AdminEmpresasPage() {
 
   return (
     <MainAdmin>
-      <div className="p-4">
-        <h1 className="text-2xl font-bold text-[#123859] mb-6">Empresas</h1>
+      <div className="p-4 space-y-6">
+        <h1 className="text-2xl font-bold text-[#123859]">Empresas</h1>
 
         {/* Filtros */}
-        <div className="flex flex-col md:flex-row gap-2 mb-4">
-          <input
-            type="text"
-            placeholder="Procurar por nome ou email..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="p-2 border rounded flex-1"
-          />
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value as any)}
-            className="p-2 border rounded"
-          >
-            <option value="Todos">Todos</option>
-            <option value="Ativa">Ativa</option>
-            <option value="Inativa">Inativa</option>
-          </select>
-          <button className="bg-[#F9941F] text-white px-4 py-2 rounded hover:brightness-95">Nova Empresa</button>
-        </div>
+        <Card className="bg-[#F2F2F2]">
+          <CardHeader>
+            <CardTitle>Filtros</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col md:flex-row gap-2 items-center">
+            <input
+              type="text"
+              placeholder="Procurar por nome ou email..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="p-2 rounded flex-1 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#123859]"
+            />
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value as any)}
+              className="p-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#123859]"
+            >
+              <option value="Todos">Todos</option>
+              <option value="Ativa">Ativa</option>
+              <option value="Inativa">Inativa</option>
+            </select>
+          </CardContent>
+        </Card>
 
-        {/* Tabela */}
-        <div className="overflow-x-auto bg-white shadow rounded">
-          <table className="w-full border-collapse">
-            <thead className="bg-[#E5E5E5]">
-              <tr>
-                <th className="p-2 text-left">ID</th>
-                <th className="p-2 text-left">Nome</th>
-                <th className="p-2 text-left">Email</th>
-                <th className="p-2 text-left">Telefone</th>
-                <th className="p-2 text-left">Status</th>
-                <th className="p-2 text-left">Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map(e => (
-                <tr key={e.id} className="border-t hover:bg-gray-50">
-                  <td className="p-2">{e.id}</td>
-                  <td className="p-2 font-medium text-[#123859]">{e.nome}</td>
-                  <td className="p-2">{e.email}</td>
-                  <td className="p-2">{e.telefone}</td>
-                  <td className="p-2">{e.status}</td>
-                  <td className="p-2 flex gap-2">
-                    <button
-                      className="text-blue-500 hover:underline"
-                      onClick={() => router.push(`/admin/empresas/${e.id}`)}
-                    >
-                      Ver
-                    </button>
-                    <button
-                      className="text-red-500 hover:underline"
-                      onClick={() => alert(`Deletar ${e.nome}`)}
-                    >
-                      Deletar
-                    </button>
-                    <button
-                      className="text-green-500 hover:underline"
-                      onClick={() => alert(`${e.status === 'Ativa' ? 'Desativar' : 'Ativar'} ${e.nome}`)}
-                    >
-                      {e.status === 'Ativa' ? 'Desativar' : 'Ativar'}
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              {filtered.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="p-6 text-center text-gray-500">Nenhuma empresa encontrada.</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+        {/* Tabela de empresas */}
+        <Card className="bg-[#F2F2F2]">
+          <CardHeader>
+            <CardTitle>Lista de Empresas</CardTitle>
+          </CardHeader>
+          <CardContent className="overflow-x-auto">
+            <Table className="min-w-full">
+              <TableHeader>
+                <TableRow>
+                  <TableHead>ID</TableHead>
+                  <TableHead>Nome</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Telefone</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filtered.map(e => (
+                  <TableRow key={e.id} className="hover:bg-gray-50">
+                    <TableCell>{e.id}</TableCell>
+                    <TableCell className="font-medium text-[#123859]">{e.nome}</TableCell>
+                    <TableCell>{e.email}</TableCell>
+                    <TableCell>{e.telefone}</TableCell>
+                    <TableCell>{e.status}</TableCell>
+                    <TableCell className="flex gap-2 flex-wrap">
+                      <Button variant="outline" size="sm" onClick={() => router.push(`/admin/empresas/${e.id}`)}>Ver</Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {filtered.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center text-gray-500">Nenhuma empresa encontrada.</TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
       </div>
     </MainAdmin>
   );

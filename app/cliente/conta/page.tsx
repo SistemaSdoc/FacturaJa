@@ -116,7 +116,7 @@ export default function ClienteContaPage() {
       <Card className="w-full max-w-4xl mx-auto mb-6 transition-colors duration-300">
         <CardHeader className="flex flex-col items-center gap-2 p-6">
           <img
-            src={clientAvatar || "/images/default-avatar.png"}
+            src={clientAvatar || "/images/faturaja.png"}
             alt="Avatar do Cliente"
             className="w-24 h-24 sm:w-20 sm:h-20 rounded-full object-cover border-4 border-accent transition-all duration-200 hover:scale-105 mb-2"
           />

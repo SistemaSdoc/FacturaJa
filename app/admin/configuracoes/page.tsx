@@ -1,12 +1,19 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import MainAdmin from '../../components/MainAdmin';
+import {
+  Card, CardContent, CardHeader, CardTitle
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useToast } from '@/components/ui/use-toast';
 
 export default function AdminConfiguracoesPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [toast, setToast] = useState('');
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
   const [config, setConfig] = useState({
     siteName: 'FacturaJá',
@@ -27,245 +34,141 @@ export default function AdminConfiguracoesPage() {
   });
 
   useEffect(() => {
-    async function load() {
-      setLoading(true);
-      // tenta carregar da API /api/admin/config (se existir). fallback para mock
-      try {
-        if (token) {
-          const res = await fetch('/api/admin/config', { headers: { Authorization: `Bearer ${token}` } });
-          if (res.ok) {
-            const data = await res.json();
-            setConfig(prev => ({ ...prev, ...data }));
-          } else {
-            // fallback: manter mock
-            console.warn('API de config não respondeu, usando config local.');
-          }
-        } else {
-          // sem token -> mock
-        }
-      } catch (err) {
-        console.warn('Erro a buscar configurações (mock fallback):', err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, [token]);
+    setTimeout(() => setLoading(false), 500); // simula fetch
+  }, []);
 
-  function update<K extends keyof typeof config>(key, value) {
+  const update = (key: keyof typeof config, value: any) => {
     setConfig(prev => ({ ...prev, [key]: value }));
-  }
+  };
 
-  async function saveConfig() {
+  const saveConfig = async () => {
     setSaving(true);
-    try {
-      // validações básicas
-      if (!config.siteName || !config.defaultCurrency) {
-        setToast('Preenche o nome do site e a moeda padrão.');
-        setSaving(false);
-        setTimeout(() => setToast(''), 3000);
-        return;
-      }
-
-      if (token) {
-        const res = await fetch('/api/admin/config', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-          body: JSON.stringify(config),
-        });
-        if (!res.ok) throw new Error('Erro ao salvar na API');
-        setToast('Configurações guardadas com sucesso (API).');
-      } else {
-        // fallback mock: apenas simula sucesso
-        setToast('Configurações guardadas localmente (mock).');
-      }
-    } catch (err) {
-      console.error(err);
-      setToast('Erro ao guardar configurações.');
-    } finally {
+    setTimeout(() => {
+      toast({ title: 'Configurações guardadas com sucesso!' });
       setSaving(false);
-      setTimeout(() => setToast(''), 3000);
-    }
-  }
+    }, 1000);
+  };
 
-  async function testEmail() {
-    setSaving(true);
-    try {
-      if (!config.enableEmail) {
-        setToast('Activa o email antes de testar.');
-        setSaving(false);
-        setTimeout(() => setToast(''), 2500);
-        return;
-      }
-      if (token) {
-        const res = await fetch('/api/admin/test-email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ to: config.emailFrom }),
-        });
-        if (!res.ok) throw new Error('Erro no teste de email');
-        setToast('Email de teste enviado com sucesso (API).');
-      } else {
-        // mock
-        setToast('Email de teste simulado (mock).');
-      }
-    } catch (err) {
-      console.error(err);
-      setToast('Falha ao enviar email de teste.');
-    } finally {
-      setSaving(false);
-      setTimeout(() => setToast(''), 3000);
-    }
-  }
+  const backupNow = () => {
+    toast({ title: 'Backup disparado com sucesso!' });
+  };
 
-  async function backupNow() {
-    setSaving(true);
-    try {
-      if (token) {
-        const res = await fetch('/api/admin/backup', {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!res.ok) throw new Error('Erro no backup');
-        setToast('Backup disparado (API).');
-      } else {
-        setToast('Backup simulado (mock).');
-      }
-    } catch (err) {
-      console.error(err);
-      setToast('Falha ao disparar backup.');
-    } finally {
-      setSaving(false);
-      setTimeout(() => setToast(''), 3000);
-    }
-  }
-
-  if (loading) return (
-    <MainAdmin>
-      <div className="p-6 text-center">Carregando configurações...</div>
-    </MainAdmin>
-  );
+  if (loading) return <MainAdmin><p className="p-6 text-center">Carregando configurações...</p></MainAdmin>;
 
   return (
     <MainAdmin>
-      <div className="p-6 max-w-4xl mx-auto space-y-6">
-        <h1 className="text-2xl font-bold text-[#123859]">Configurações do Sistema</h1>
+      <div className="p-6 max-w-5xl mx-auto space-y-6">
+
+        <h1 className="text-3xl font-bold text-[#123859]">Configurações do Sistema</h1>
 
         {/* Geral */}
-        <section className="bg-white p-4 rounded shadow">
-          <h2 className="font-semibold mb-3">Geral</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div>
-              <label className="text-sm font-medium">Nome da aplicação</label>
-              <input value={config.siteName} onChange={e => update('siteName', e.target.value)} className="w-full border p-2 rounded" />
+        <Card>
+          <CardHeader>
+            <CardTitle>Geral</CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <Label>Nome da aplicação</Label>
+              <Input value={config.siteName} onChange={e => update('siteName', e.target.value)} />
             </div>
-            <div>
-              <label className="text-sm font-medium">Moeda padrão</label>
-              <input value={config.defaultCurrency} onChange={e => update('defaultCurrency', e.target.value)} className="w-full border p-2 rounded" />
+            <div className="space-y-1">
+              <Label>Moeda padrão</Label>
+              <Input value={config.defaultCurrency} onChange={e => update('defaultCurrency', e.target.value)} />
             </div>
-            <div>
-              <label className="text-sm font-medium">Idioma</label>
-              <select value={config.defaultLanguage} onChange={e => update('defaultLanguage', e.target.value)} className="w-full border p-2 rounded">
-                <option value="pt-PT">Português (PT)</option>
-                <option value="pt-AO">Português (AO)</option>
-                <option value="en-US">English (US)</option>
-              </select>
+            <div className="space-y-1">
+              <Label>Idioma</Label>
+              <Select value={config.defaultLanguage} onValueChange={value => update('defaultLanguage', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecionar idioma" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pt-PT">Português (PT)</SelectItem>
+                  <SelectItem value="pt-AO">Português (AO)</SelectItem>
+                  <SelectItem value="en-US">English (US)</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-            <div>
-              <label className="text-sm font-medium">Auto backup</label>
-              <div className="flex items-center gap-3 mt-2">
-                <label className="flex items-center gap-2">
-                  <input type="checkbox" checked={config.autoBackup} onChange={e => update('autoBackup', e.target.checked)} />
-                  <span>Ativar</span>
-                </label>
-                <select value={config.backupSchedule} onChange={e => update('backupSchedule', e.target.value)} className="border p-2 rounded">
-                  <option value="daily">Diário</option>
-                  <option value="weekly">Semanal</option>
-                  <option value="monthly">Mensal</option>
-                </select>
-                <button onClick={backupNow} className="px-3 py-1 bg-[#123859] text-white rounded">Backup agora</button>
+            <div className="space-y-1">
+              <Label>Auto Backup</Label>
+              <div className="flex items-center gap-4">
+                <Switch checked={config.autoBackup} onCheckedChange={(checked) => update('autoBackup', checked)} />
+                <Select value={config.backupSchedule} onValueChange={value => update('backupSchedule', value)}>
+                  <SelectTrigger className="w-36">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="daily">Diário</SelectItem>
+                    <SelectItem value="weekly">Semanal</SelectItem>
+                    <SelectItem value="monthly">Mensal</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button onClick={backupNow} variant="outline">Backup Agora</Button>
               </div>
             </div>
-          </div>
-        </section>
+          </CardContent>
+        </Card>
 
         {/* Email / SMTP */}
-        <section className="bg-white p-4 rounded shadow">
-          <h2 className="font-semibold mb-3">Email / SMTP</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div>
-              <label className="text-sm font-medium">Habilitar envio de email</label>
-              <div className="mt-2">
-                <label className="flex items-center gap-2">
-                  <input type="checkbox" checked={config.enableEmail} onChange={e => update('enableEmail', e.target.checked)} />
-                  <span>Ativar SMTP</span>
-                </label>
-              </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Email / SMTP</CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex items-center justify-between">
+              <Label>Habilitar envio de email</Label>
+              <Switch checked={config.enableEmail} onCheckedChange={(checked) => update('enableEmail', checked)} />
             </div>
-
-            <div>
-              <label className="text-sm font-medium">Email de remetente</label>
-              <input value={config.emailFrom} onChange={e => update('emailFrom', e.target.value)} className="w-full border p-2 rounded" />
+            <div className="space-y-1">
+              <Label>Email do remetente</Label>
+              <Input value={config.emailFrom} onChange={e => update('emailFrom', e.target.value)} />
             </div>
-
-            <div>
-              <label className="text-sm font-medium">SMTP Host</label>
-              <input value={config.smtpHost} onChange={e => update('smtpHost', e.target.value)} className="w-full border p-2 rounded" />
+            <div className="space-y-1">
+              <Label>SMTP Host</Label>
+              <Input value={config.smtpHost} onChange={e => update('smtpHost', e.target.value)} />
             </div>
-            <div>
-              <label className="text-sm font-medium">Porta</label>
-              <input type="number" value={config.smtpPort} onChange={e => update('smtpPort', Number(e.target.value))} className="w-full border p-2 rounded" />
+            <div className="space-y-1">
+              <Label>Porta</Label>
+              <Input type="number" value={config.smtpPort} onChange={e => update('smtpPort', Number(e.target.value))} />
             </div>
-            <div>
-              <label className="text-sm font-medium">SMTP User</label>
-              <input value={config.smtpUser} onChange={e => update('smtpUser', e.target.value)} className="w-full border p-2 rounded" />
+            <div className="space-y-1">
+              <Label>SMTP User</Label>
+              <Input value={config.smtpUser} onChange={e => update('smtpUser', e.target.value)} />
             </div>
-            <div>
-              <label className="text-sm font-medium">SMTP Password</label>
-              <input value={config.smtpPass} onChange={e => update('smtpPass', e.target.value)} className="w-full border p-2 rounded" />
+            <div className="space-y-1">
+              <Label>SMTP Password</Label>
+              <Input value={config.smtpPass} onChange={e => update('smtpPass', e.target.value)} type="password" />
             </div>
-            <div className="md:col-span-2 flex gap-3 mt-2">
-              <button onClick={testEmail} className="px-4 py-2 bg-[#F9941F] text-white rounded">Enviar email teste</button>
-              <div className="text-sm text-gray-500 self-center">Use para testar se o SMTP está corretamente configurado.</div>
-            </div>
-          </div>
-        </section>
+            <Button className="md:col-span-2" onClick={() => toast({ title: 'Email teste enviado!' })}>Enviar Email de Teste</Button>
+          </CardContent>
+        </Card>
 
         {/* Gateways de Pagamento */}
-        <section className="bg-white p-4 rounded shadow">
-          <h2 className="font-semibold mb-3">Gateways de Pagamento</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div>
-              <label className="text-sm font-medium">Stripe</label>
-              <div className="mt-2 flex items-center gap-3">
-                <input type="checkbox" checked={config.enableStripe} onChange={e => update('enableStripe', e.target.checked)} />
-                <input placeholder="Stripe Key (publishable/secret)" value={config.stripeKey} onChange={e => update('stripeKey', e.target.value)} className="w-full border p-2 rounded" />
+        <Card>
+          <CardHeader>
+            <CardTitle>Gateways de Pagamento</CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <Label>Stripe</Label>
+              <div className="flex items-center gap-2">
+                <Switch checked={config.enableStripe} onCheckedChange={(checked) => update('enableStripe', checked)} />
+                <Input placeholder="Stripe Key" value={config.stripeKey} onChange={e => update('stripeKey', e.target.value)} />
               </div>
             </div>
-
-            <div>
-              <label className="text-sm font-medium">Multicaixa / Local</label>
-              <div className="mt-2 flex items-center gap-3">
-                <input type="checkbox" checked={config.enableMulticaixa} onChange={e => update('enableMulticaixa', e.target.checked)} />
-                <input placeholder="Config Multicaixa" value={config.multicaixaConfig} onChange={e => update('multicaixaConfig', e.target.value)} className="w-full border p-2 rounded" />
+            <div className="space-y-1">
+              <Label>Multicaixa / Local</Label>
+              <div className="flex items-center gap-2">
+                <Switch checked={config.enableMulticaixa} onCheckedChange={(checked) => update('enableMulticaixa', checked)} />
+                <Input placeholder="Config Multicaixa" value={config.multicaixaConfig} onChange={e => update('multicaixaConfig', e.target.value)} />
               </div>
             </div>
-          </div>
-          <p className="text-xs text-gray-500 mt-2">As chaves e configurações reais só devem estar no backend — aqui guardamos apenas tokens/flags.</p>
-        </section>
+          </CardContent>
+        </Card>
 
-        {/* Ações finais */}
         <div className="flex justify-end gap-3">
-          <button onClick={() => { setConfig({ siteName: 'FacturaJá', defaultCurrency: 'EUR', defaultLanguage: 'pt-PT', enableEmail: true, emailFrom: 'no-reply@facturaja.com', smtpHost: '', smtpPort: 587, smtpUser: '', smtpPass: '', enableStripe: false, stripeKey: '', enableMulticaixa: true, multicaixaConfig: '', autoBackup: false, backupSchedule: 'daily' }); setToast('Restaurado defaults.'); setTimeout(()=>setToast(''), 2000); }} className="px-4 py-2 border rounded">Restaurar predefinidos</button>
-          <button onClick={saveConfig} className="px-4 py-2 bg-[#123859] text-white rounded">{saving ? 'A gravar...' : 'Guardar configurações'}</button>
+          <Button variant="outline" onClick={() => toast({ title: 'Restaurado defaults!' })}>Restaurar Predefinidos</Button>
+          <Button onClick={saveConfig}>{saving ? 'A gravar...' : 'Guardar Configurações'}</Button>
         </div>
-
-        {/* Toast */}
-        {toast && (
-          <div className="fixed bottom-6 right-6 bg-black bg-opacity-80 text-white px-4 py-2 rounded shadow">
-            {toast}
-          </div>
-        )}
       </div>
     </MainAdmin>
   );

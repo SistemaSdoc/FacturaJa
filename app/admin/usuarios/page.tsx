@@ -2,6 +2,13 @@
 import React, { useEffect, useState } from 'react';
 import MainAdmin from '../../components/MainAdmin';
 import { useRouter } from 'next/navigation';
+import { Card, CardContent } from '@/components/ui/card';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { Trash, Eye } from 'lucide-react';
 
 interface Usuario {
   id: number;
@@ -45,8 +52,17 @@ export default function AdminUsuariosPage() {
   };
 
   const handleDelete = (id: number) => {
-    if(confirm('Tem certeza que deseja deletar este usuário?')) {
+    if (confirm('Tem certeza que deseja deletar este usuário?')) {
       setUsuarios(prev => prev.filter(u => u.id !== id));
+    }
+  };
+
+  const getRoleColor = (role: Usuario['role']) => {
+    switch (role) {
+      case 'Admin': return 'bg-red-500 text-white';
+      case 'Usuário': return 'bg-blue-500 text-white';
+      case 'Financeiro': return 'bg-green-500 text-white';
+      default: return 'bg-gray-500 text-white';
     }
   };
 
@@ -54,93 +70,79 @@ export default function AdminUsuariosPage() {
 
   return (
     <MainAdmin>
-      <div className="p-4">
-        <h1 className="text-2xl font-bold text-[#123859] mb-6">Usuários</h1>
+      <div className="p-4 space-y-6">
+        <h1 className="text-2xl font-bold text-[#123859]">Usuários</h1>
 
         {/* Filtros */}
-        <div className="flex flex-col md:flex-row gap-2 mb-4">
-          <input
-            type="text"
-            placeholder="Procurar por nome ou email..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="p-2 border rounded flex-1"
-          />
-          <select
-            value={filterRole}
-            onChange={(e) => setFilterRole(e.target.value as any)}
-            className="p-2 border rounded"
-          >
-            <option value="Todos">Todos os Roles</option>
-            <option value="Admin">Admin</option>
-            <option value="Usuário">Usuário</option>
-            <option value="Financeiro">Financeiro</option>
-          </select>
-          <select
-            value={filterEmpresa}
-            onChange={(e) => setFilterEmpresa(e.target.value)}
-            className="p-2 border rounded"
-          >
-            <option value="Todos">Todas as Empresas</option>
-            {empresas.map(emp => <option key={emp} value={emp}>{emp}</option>)}
-          </select>
-        </div>
+        <Card>
+          <CardContent className="flex flex-col md:flex-row gap-2 items-center">
+            <Input
+              placeholder="Procurar por nome ou email..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="flex-1"
+            />
 
-        {/* Tabela */}
-        <div className="overflow-x-auto bg-white shadow rounded">
-          <table className="w-full border-collapse">
-            <thead className="bg-[#E5E5E5]">
-              <tr>
-                <th className="p-2 text-left">ID</th>
-                <th className="p-2 text-left">Nome</th>
-                <th className="p-2 text-left">Email</th>
-                <th className="p-2 text-left">Role</th>
-                <th className="p-2 text-left">Empresa</th>
-                <th className="p-2 text-left">Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map(u => (
-                <tr key={u.id} className="border-t hover:bg-gray-50">
-                  <td className="p-2">{u.id}</td>
-                  <td className="p-2 font-medium text-[#123859]">{u.nome}</td>
-                  <td className="p-2">{u.email}</td>
-                  <td className="p-2">
-                    <select
-                      value={u.role}
-                      onChange={(e) => handleRoleChange(u.id, e.target.value as Usuario['role'])}
-                      className="p-1 border rounded"
-                    >
-                      <option value="Admin">Admin</option>
-                      <option value="Usuário">Usuário</option>
-                      <option value="Financeiro">Financeiro</option>
-                    </select>
-                  </td>
-                  <td className="p-2">{u.empresa}</td>
-                  <td className="p-2 flex gap-2">
-                    <button
-                      onClick={() => router.push(`/admin/usuarios/${u.id}`)}
-                      className="text-blue-500 hover:underline"
-                    >
-                      Ver
-                    </button>
-                    <button
-                      onClick={() => handleDelete(u.id)}
-                      className="text-red-500 hover:underline"
-                    >
-                      Deletar
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              {filtered.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="p-6 text-center text-gray-500">Nenhum usuário encontrado.</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+            <Select value={filterRole} onValueChange={(val) => setFilterRole(val as any)}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Todos os Roles" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Todos">Todos</SelectItem>
+                <SelectItem value="Admin">Admin</SelectItem>
+                <SelectItem value="Usuário">Usuário</SelectItem>
+                <SelectItem value="Financeiro">Financeiro</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={filterEmpresa} onValueChange={(val) => setFilterEmpresa(val)}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Todas as Empresas" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Todos">Todos</SelectItem>
+                {empresas.map(emp => <SelectItem key={emp} value={emp}>{emp}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </CardContent>
+        </Card>
+
+        {/* Tabela de usuários */}
+        <Card>
+          <CardContent className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>ID</TableHead>
+                  <TableHead>Nome</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Empresa</TableHead>
+                  <TableHead>Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filtered.map(u => (
+                  <TableRow key={u.id} className="hover:bg-gray-50 transition-colors">
+                    <TableCell>{u.id}</TableCell>
+                    <TableCell>{u.nome}</TableCell>
+                    <TableCell>{u.email}</TableCell>
+                    <TableCell>{u.empresa}</TableCell>
+                    <TableCell className="flex gap-2">
+                      <Button size="sm" variant="outline" onClick={() => router.push(`/admin/usuarios/${u.id}`)} className="flex items-center gap-1">
+                        <Eye size={16} /> Ver
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {filtered.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center p-6 text-gray-500">Nenhum usuário encontrado.</TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
       </div>
     </MainAdmin>
   );

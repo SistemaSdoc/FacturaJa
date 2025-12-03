@@ -5,6 +5,7 @@ import {
 } from 'recharts';
 import MainEmpresa from '../components/MainLayout';
 
+
 interface KPI {
   vendasHoje: number;
   faturasPendentes: number;

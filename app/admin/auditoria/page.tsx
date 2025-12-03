@@ -1,19 +1,13 @@
 'use client';
 import React, { useEffect, useMemo, useState } from 'react';
 import MainAdmin from '../../components/MainAdmin';
-
-/**
- * Página: /admin/auditoria
- *
- * Funcionalidades:
- * - Tabela com logs (mock)
- * - Filtros: pesquisa livre, usuário, ação (CREATE/UPDATE/DELETE/LOGIN), intervalo de datas
- * - Paginação simples (client-side)
- * - Ver detalhe (modal)
- * - Export CSV do resultado filtrado
- *
- * Coloca este arquivo em: app/admin/auditoria/page.tsx
- */
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select';
 
 type ActionType = 'CREATE' | 'UPDATE' | 'DELETE' | 'LOGIN' | 'LOGOUT' | 'OTHER';
 
@@ -23,7 +17,7 @@ interface AuditLog {
   user: string;
   company?: string;
   action: ActionType;
-  object: string; // ex: "Empresa:12" ou "Fatura:345"
+  object: string;
   description: string;
   ip?: string;
   meta?: Record<string, any>;
@@ -44,7 +38,7 @@ function generateMockLogs(count = 120): AuditLog[] {
 
   const logs: AuditLog[] = [];
   for (let i = 0; i < count; i++) {
-    const when = new Date(Date.now() - Math.random() * 1000 * 60 * 60 * 24 * 60); // últimos 60 dias
+    const when = new Date(Date.now() - Math.random() * 1000 * 60 * 60 * 24 * 60); 
     const user = users[Math.floor(Math.random() * users.length)];
     const company = companies[Math.floor(Math.random() * companies.length)];
     const obj = objs[Math.floor(Math.random() * objs.length)];
@@ -63,60 +57,38 @@ function generateMockLogs(count = 120): AuditLog[] {
       meta: { example: 'meta', changes: (action === 'UPDATE' ? { field: 'nif', before: '123', after: '456' } : undefined) }
     });
   }
-  // ordenar desc
   return logs.sort((a,b) => +new Date(b.timestamp) - +new Date(a.timestamp));
 }
 
 export default function AdminAuditoriaPage() {
-  // dados (mock) — futuramente trocar por fetch('/api/admin/audit')
   const [allLogs] = useState<AuditLog[]>(() => generateMockLogs(200));
-
-  // filtros / UI
   const [query, setQuery] = useState('');
-  const [userFilter, setUserFilter] = useState('');
-  const [actionFilter, setActionFilter] = useState<ActionType | ''>('');
-  const [startDate, setStartDate] = useState<string>(''); // yyyy-mm-dd
-  const [endDate, setEndDate] = useState<string>('');
-
-  // paginação
+  const [userFilter, setUserFilter] = useState('all');
+  const [actionFilter, setActionFilter] = useState('all');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [page, setPage] = useState(1);
   const perPage = 15;
-
-  // modal detalhe
   const [detail, setDetail] = useState<AuditLog | null>(null);
 
-  // derive users list from logs for filter
   const users = useMemo(() => Array.from(new Set(allLogs.map(l => l.user))), [allLogs]);
 
-  // filtragem client-side
   const filtered = useMemo(() => {
     return allLogs.filter(l => {
-      if (query) {
-        const q = query.toLowerCase();
-        const hay = `${l.user} ${l.company ?? ''} ${l.action} ${l.object} ${l.description} ${l.ip}`.toLowerCase();
-        if (!hay.includes(q)) return false;
-      }
-      if (userFilter && l.user !== userFilter) return false;
-      if (actionFilter && l.action !== actionFilter) return false;
-      if (startDate) {
-        const s = new Date(startDate + 'T00:00:00');
-        if (new Date(l.timestamp) < s) return false;
-      }
-      if (endDate) {
-        const e = new Date(endDate + 'T23:59:59');
-        if (new Date(l.timestamp) > e) return false;
-      }
+      if (query && !`${l.user} ${l.company ?? ''} ${l.action} ${l.object} ${l.description} ${l.ip}`.toLowerCase().includes(query.toLowerCase())) return false;
+      if (userFilter !== 'all' && l.user !== userFilter) return false;
+      if (actionFilter !== 'all' && l.action !== actionFilter) return false;
+      if (startDate && new Date(l.timestamp) < new Date(startDate+'T00:00:00')) return false;
+      if (endDate && new Date(l.timestamp) > new Date(endDate+'T23:59:59')) return false;
       return true;
     });
   }, [allLogs, query, userFilter, actionFilter, startDate, endDate]);
 
-  // controle paginação
   useEffect(() => setPage(1), [query, userFilter, actionFilter, startDate, endDate]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
   const pageItems = filtered.slice((page-1)*perPage, page*perPage);
 
-  // export CSV do resultado filtrado (apenas colunas importantes)
   const exportCSV = () => {
     const rows = filtered.map(r => ({
       id: r.id,
@@ -141,11 +113,11 @@ export default function AdminAuditoriaPage() {
 
   return (
     <MainAdmin>
-      <div className="p-4">
-        <h1 className="text-2xl font-bold text-[#123859] mb-4">Auditoria / Logs do Sistema</h1>
+      <div className="p-6">
+        <h1 className="text-2xl font-bold text-[#123859] mb-6">Auditoria / Logs do Sistema</h1>
 
-        {/* filtros */}
-        <div className="bg-white p-4 rounded shadow mb-4 grid grid-cols-1 md:grid-cols-6 gap-3 items-end">
+        {/* Filtros */}
+        <div className="bg-white p-4 rounded shadow mb-6 grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
           <div className="md:col-span-2">
             <label className="text-sm font-medium">Pesquisar livre</label>
             <input value={query} onChange={e=>setQuery(e.target.value)} placeholder="usuário, objeto, ip, descrição..." className="w-full border p-2 rounded" />
@@ -153,18 +125,28 @@ export default function AdminAuditoriaPage() {
 
           <div>
             <label className="text-sm font-medium">Usuário</label>
-            <select value={userFilter} onChange={e=>setUserFilter(e.target.value)} className="w-full border p-2 rounded">
-              <option value="">Todos</option>
-              {users.map(u => <option key={u} value={u}>{u}</option>)}
-            </select>
+            <Select value={userFilter} onValueChange={setUserFilter}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Todos" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                {users.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
+              </SelectContent>
+            </Select>
           </div>
 
           <div>
             <label className="text-sm font-medium">Ação</label>
-            <select value={actionFilter} onChange={e=>setActionFilter(e.target.value as any)} className="w-full border p-2 rounded">
-              <option value="">Todas</option>
-              {ACTIONS.map(a => <option key={a} value={a}>{a}</option>)}
-            </select>
+            <Select value={actionFilter} onValueChange={setActionFilter}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Todas" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas</SelectItem>
+                {ACTIONS.map(a => <SelectItem key={a} value={a}>{a}</SelectItem>)}
+              </SelectContent>
+            </Select>
           </div>
 
           <div>
@@ -178,18 +160,18 @@ export default function AdminAuditoriaPage() {
           </div>
 
           <div className="flex gap-2 justify-end md:justify-start">
-            <button onClick={()=>{ setQuery(''); setUserFilter(''); setActionFilter(''); setStartDate(''); setEndDate(''); }} className="px-3 py-2 border rounded">Limpar</button>
+            <button onClick={()=>{ setQuery(''); setUserFilter('all'); setActionFilter('all'); setStartDate(''); setEndDate(''); }} className="px-3 py-2 border rounded">Limpar</button>
             <button onClick={exportCSV} className="px-3 py-2 bg-[#F9941F] text-white rounded">Exportar CSV</button>
           </div>
         </div>
 
-        {/* resumo */}
-        <div className="flex items-center justify-between mb-3 gap-3">
+        {/* Resumo */}
+        <div className="flex items-center justify-between mb-4 gap-3">
           <div className="text-sm text-gray-600">Mostrando <strong>{filtered.length}</strong> registos — página {page} / {totalPages}</div>
           <div className="text-sm text-gray-500">Último registo: {allLogs[0] ? formatDateShort(allLogs[0].timestamp) : '—'}</div>
         </div>
 
-        {/* tabela */}
+        {/* Tabela */}
         <div className="bg-white rounded shadow overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-[#E5E5E5]">
@@ -229,7 +211,7 @@ export default function AdminAuditoriaPage() {
           </table>
         </div>
 
-        {/* paginação */}
+        {/* Paginação */}
         <div className="flex items-center justify-between mt-4 gap-3">
           <div className="flex gap-2">
             <button onClick={()=>setPage(1)} disabled={page===1} className="px-3 py-1 border rounded disabled:opacity-50">« Primeiro</button>
@@ -252,7 +234,7 @@ export default function AdminAuditoriaPage() {
         </div>
       </div>
 
-      {/* modal detalhe */}
+      {/* Modal detalhe */}
       {detail && (
         <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 bg-black bg-opacity-40">
           <div className="bg-white rounded shadow w-full max-w-2xl p-6">
