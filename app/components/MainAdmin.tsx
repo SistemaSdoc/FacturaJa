@@ -23,8 +23,8 @@ export default function MainAdmin({ children }: MainAdminProps) {
   const router = useRouter();
   const pathname = usePathname();
 
-  const [mounted, setMounted] = useState(false); // 🔹 Para evitar hydration mismatch
-  const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
+  const [mounted, setMounted] = useState(false); 
+  const [sidebarOpen, setSidebarOpen] = useState(true); // ✅ Estado do sidebar
   const [profileOpen, setProfileOpen] = useState<boolean>(false);
   const [notifOpen, setNotifOpen] = useState<boolean>(false);
   const [quickOpen, setQuickOpen] = useState<boolean>(false);
@@ -37,7 +37,6 @@ export default function MainAdmin({ children }: MainAdminProps) {
   const [adminAvatar, setAdminAvatar] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
 
-  // Só rodar no cliente
   useEffect(() => {
     setMounted(true);
     try {
@@ -84,7 +83,6 @@ export default function MainAdmin({ children }: MainAdminProps) {
     router.push('/');
   };
 
-  // 🔹 Evita renderização no servidor
   if (!mounted) return null;
 
   return (
@@ -92,11 +90,12 @@ export default function MainAdmin({ children }: MainAdminProps) {
       {/* SIDEBAR */}
       <aside className={`bg-white text-[#123859] shadow-md p-4 flex flex-col justify-between transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-20'}`}>
         <div>
+          {/* Botão de colapsar sidebar */}
           <div className="flex items-center justify-between mb-6">
             <div className={`flex items-center gap-2 ${!sidebarOpen ? 'justify-center w-full' : ''}`}>
               <div className={`${!sidebarOpen ? 'hidden' : 'text-[#123859] font-bold text-lg'}`}>Administrador</div>
             </div>
-            <button aria-label={sidebarOpen ? 'Fechar sidebar' : 'Abrir sidebar'} onClick={() => setSidebarOpen(s => !s)} className="p-1 rounded hover:bg-gray-100 transition-colors duration-150">
+            <button onClick={() => setSidebarOpen(s => !s)} className="p-1 rounded hover:bg-gray-100 transition-colors duration-150">
               <Menu size={18} />
             </button>
           </div>
@@ -116,7 +115,7 @@ export default function MainAdmin({ children }: MainAdminProps) {
         </div>
 
         <div className={`${!sidebarOpen ? 'flex justify-center' : ''}`}>
-          <button onClick={handleLogout} className="w-full px-3 py-2 rounded text-white bg-red-500 hover:brightness-95 flex items-center justify-center gap-2 transition-all duration-200">
+          <button onClick={handleLogout} className="w-full px-3 py-2 rounded text-white bg-[#F9941F] hover:brightness-95 flex items-center justify-center gap-2 transition-all duration-200">
             <LogOut size={16} />
             <span className={`${!sidebarOpen ? 'hidden' : ''}`}>Logout</span>
           </button>
@@ -126,29 +125,23 @@ export default function MainAdmin({ children }: MainAdminProps) {
       {/* MAIN */}
       <div className="flex-1 flex flex-col min-h-screen">
         {/* NAVBAR */}
-        <header className="w-full bg-white shadow-md py-3 px-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button aria-label="Alternar sidebar" onClick={() => setSidebarOpen(s => !s)} className="p-2 rounded hover:bg-gray-100 md:hidden transition-colors duration-150">
-              <Menu className="text-[#123859]" size={18} />
-            </button>
+        <header className="w-full bg-white shadow-md py-3 px-4 flex items-center justify-between flex-wrap">
+          <div className="flex items-center gap-4 flex-wrap">
+            <span className="font-bold text-[#123859]">FacturaJá</span>
 
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-[#123859]">FacturaJá</span>
-            </div>
-
-            <div className="hidden md:flex items-center gap-2 ml-4 bg-[#F2F2F2] rounded px-2 py-1 transition-colors duration-150">
+            <div className="flex items-center gap-2 bg-[#F2F2F2] rounded px-2 py-1 transition-colors duration-150 flex-1 min-w-[200px]">
               <Search size={16} className="text-[#123859]" />
               <input
                 placeholder="Pesquisar..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') router.push(`/admin/dashboard?search=${encodeURIComponent(searchQuery)}`); }}
-                className="bg-transparent outline-none text-sm text-[#123859]"
+                className="bg-transparent outline-none text-sm text-[#123859] w-full"
               />
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             {/* QUICK ACTIONS */}
             <div className="relative" ref={quickRef}>
               <button onClick={() => { setQuickOpen(q => !q); setNotifOpen(false); }} className="p-2 rounded hover:bg-gray-100 transition-colors duration-150">
@@ -173,7 +166,7 @@ export default function MainAdmin({ children }: MainAdminProps) {
             <div className="relative" ref={notifRef}>
               <button onClick={() => { setNotifOpen(n => !n); setQuickOpen(false); }} className="p-2 rounded hover:bg-gray-100 relative transition-colors duration-150">
                 <Bell size={18} className="text-[#123859] transition-colors duration-200 hover:text-[#F9941F]" />
-                <span className="absolute -top-1 -right-1 px-1.5 py-0.5 text-xs text-white bg-red-500 rounded-full">{notifications.length}</span>
+                <span className="absolute -top-1 -right-1 px-1.5 py-0.5 text-xs text-white bg-[#F9941F]-500 rounded-full">{notifications.length}</span>
               </button>
             </div>
 
@@ -183,8 +176,8 @@ export default function MainAdmin({ children }: MainAdminProps) {
                 <div className="w-9 h-9 rounded-full overflow-hidden bg-gray-200">
                   {adminAvatar ? <img src={adminAvatar} alt="Avatar" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-sm text-[#123859] font-semibold">{adminName.slice(0, 1).toUpperCase()}</div>}
                 </div>
-                <span className="hidden sm:inline text-[#123859] font-medium truncate max-w-[10rem] transition-colors duration-200">{adminName}</span>
-                <ChevronDown size={16} className="text-[#123859] hidden sm:inline transition-colors duration-200" />
+                <span className="text-[#123859] font-medium truncate max-w-[10rem] transition-colors duration-200">{adminName}</span>
+                <ChevronDown size={16} className="text-[#123859] transition-colors duration-200" />
               </button>
 
               {profileOpen && (
