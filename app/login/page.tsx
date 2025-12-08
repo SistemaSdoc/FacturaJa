@@ -1,6 +1,5 @@
 'use client';
 import React, { useEffect } from "react";
-import { useAuth } from "../context/AuthProvider";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 
@@ -24,12 +23,13 @@ const InvoiceIcon = ({ sizeClass = "w-10 h-10", color = COLOR_PRIMARY }) => (
 );
 
 export default function LoginPage() {
-  const { login, user, loading } = useAuth();
   const router = useRouter();
 
+  // Se houver lógica de sessão SPA, você pode adicionar aqui
   useEffect(() => {
-    if (user) router.push("/dashboard");
-  }, [user, router]);
+    // Exemplo: se já estiver logado, redirecionar
+    // router.push("/dashboard");
+  }, [router]);
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 font-inter relative overflow-hidden">
@@ -42,7 +42,6 @@ export default function LoginPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7 }}
       >
-
         {/* Lado esquerdo */}
         <div className="hidden lg:flex flex-col items-center justify-center p-10 xl:p-16 text-white w-1/2" style={{ backgroundColor: COLOR_PRIMARY }}>
           <InvoiceIcon sizeClass="w-24 h-24 mb-4" color={COLOR_ACCENT} />
@@ -64,37 +63,39 @@ export default function LoginPage() {
             Faça login e comece a faturar de forma rápida e segura.
           </p>
 
-          {/* BOTÃO LOGIN SOCIAL */}
+          {/* BOTÕES DE LOGIN SOCIAL VIA LARAVEL */}
           <motion.button
             type="button"
-            onClick={login}
-            disabled={loading}
+            onClick={() => window.location.href = "http://localhost:8000/auth/redirect/google"}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className={`w-full py-3 rounded-xl font-semibold transition flex justify-center items-center mb-4 ${
-              loading ? "bg-gray-400 cursor-not-allowed" : "bg-[#123859] hover:bg-[#F9941F] text-white"
-            }`}
+            className="w-full py-3 rounded-xl font-semibold transition flex justify-center items-center mb-4 bg-red-600 hover:bg-red-700 text-white"
           >
-            {loading ? (
-              <span className="flex items-center">
-                <svg
-                  className="animate-spin h-5 w-5 mr-2 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-                </svg>
-                Carregando...
-              </span>
-            ) : (
-              "Iniciar Sessão com Auth0"
-            )}
+            Login com Google
+          </motion.button>
+
+          <motion.button
+            type="button"
+            onClick={() => window.location.href = "http://localhost:8000/auth/redirect/github"}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="w-full py-3 rounded-xl font-semibold transition flex justify-center items-center mb-4 bg-black hover:bg-gray-800 text-white"
+          >
+            Login com GitHub
+          </motion.button>
+
+          <motion.button
+            type="button"
+            onClick={() => window.location.href = "http://localhost:8000/auth/redirect/linkedin"}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="w-full py-3 rounded-xl font-semibold transition flex justify-center items-center mb-4 bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            Login com LinkedIn
           </motion.button>
 
           <p className="text-center text-sm text-gray-500">
-            Logins sociais (Google/GitHub) via Auth0
+            Todos os logins sociais via Auth0 no backend Laravel
           </p>
         </div>
       </motion.div>

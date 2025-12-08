@@ -106,9 +106,9 @@ export default function ClienteContaPage() {
   if (!cliente) return <p className="p-6 text-center text-red-500">Cliente não encontrado.</p>;
 
   const statusClass = (s: Status) =>
-    s === "Pago" ? "text-green-500 bg-green-50 dark:bg-green-900/30 dark:text-green-300" :
-    s === "Pendente" ? "text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20 dark:text-yellow-300" :
-    "text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-300";
+    s === "Pago" ? "text-green-500 bg-green-50" :
+    s === "Pendente" ? "text-yellow-600 bg-yellow-50" :
+    "text-red-600 bg-red-50";
 
   return (
     <MainCliente>
@@ -135,7 +135,7 @@ export default function ClienteContaPage() {
           <div className="flex items-center justify-between gap-4">
             <h3 className="text-xl font-bold text-accent">Minhas Faturas</h3>
             <div>
-              <Button variant="outline" size="sm" onClick={() => router.push("/cliente/invoices")}>
+              <Button variant="outline" size="sm" onClick={() => router.push("/cliente/invoices") }>
                 Ver todas
               </Button>
             </div>

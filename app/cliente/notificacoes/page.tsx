@@ -40,7 +40,7 @@ export default function ClienteNotificationsPage() {
     };
 
     if (!mounted) return null;
-    if (loading) return <p className="p-6 text-center text-primary dark:text-primary">Carregando...</p>;
+    if (loading) return <p className="p-6 text-center text-primary">Carregando...</p>;
 
     const notificacoesFiltradas = notificacoes.filter(n => {
         if (filtro === 'Lidas') return n.lida;
@@ -62,12 +62,12 @@ export default function ClienteNotificationsPage() {
         <MainCliente>
             <div className="p-6">
                 <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
-                    <h1 className="text-3xl font-bold text-primary dark:text-primary">Minhas Notificações</h1>
+                    <h1 className="text-3xl font-bold text-primary">Minhas Notificações</h1>
                     <div className="flex gap-3 items-center">
                         <select
                             value={filtro}
                             onChange={(e) => setFiltro(e.target.value as any)}
-                            className="px-3 py-2 rounded border border-gray-300 bg-bg dark:bg-surface text-primary dark:text-primary transition-colors"
+                            className="px-3 py-2 rounded border border-gray-300 bg-bg text-primary transition-colors"
                         >
                             <option value="Todas">Todas</option>
                             <option value="Lidas">Lidas</option>
@@ -77,13 +77,13 @@ export default function ClienteNotificationsPage() {
                 </div>
 
                 {notificacoesFiltradas.length === 0 ? (
-                    <p className="text-gray-500 dark:text-gray-400 text-center">Nenhuma notificação encontrada.</p>
+                    <p className="text-gray-500 text-center">Nenhuma notificação encontrada.</p>
                 ) : (
                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                         {notificacoesFiltradas.map((n, idx) => (
                             <div
                                 key={n.id}
-                                className={`relative flex items-start gap-4 p-5 rounded-xl shadow-lg transform transition-all duration-300 hover:scale-105 animate-fade-in bg-surface dark:bg-surface`}
+                                className={`relative flex items-start gap-4 p-5 rounded-xl shadow-lg transform transition-all duration-300 hover:scale-105 animate-fade-in bg-surface`}
                                 style={{ animationDelay: `${idx * 100}ms` }}
                             >
                                 {/* Barra lateral indicador de não lida */}
@@ -93,11 +93,11 @@ export default function ClienteNotificationsPage() {
                                 ></div>
 
                                 <div className="flex flex-col flex-1 gap-2 ml-3">
-                                    <div className="flex items-center gap-3 font-semibold text-lg text-primary dark:text-primary">
+                                    <div className="flex items-center gap-3 font-semibold text-lg text-primary">
                                         {getIcon(n.tipo)}
                                         <span>{n.texto}</span>
                                     </div>
-                                    <span className={`text-sm transition-colors duration-300 ${n.lida ? 'text-gray-400 dark:text-gray-500' : 'text-gray-600 dark:text-gray-300'}`}>
+                                    <span className={`text-sm transition-colors duration-300 ${n.lida ? 'text-gray-400' : 'text-gray-600'}`}>
                                         {n.hora}
                                     </span>
 
@@ -105,14 +105,14 @@ export default function ClienteNotificationsPage() {
                                         {!n.lida ? (
                                             <button
                                                 onClick={() => marcarComoLida(n.id)}
-                                                className="px-3 py-1 rounded-full border border-gray-300 bg-bg dark:bg-surface text-primary dark:text-primary font-medium hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                                className="px-3 py-1 rounded-full border border-gray-300 bg-bg text-primary font-medium hover:bg-gray-100 transition-colors"
                                             >
                                                 Marcar como lida
                                             </button>
                                         ) : (
                                             <button
                                                 onClick={() => marcarComoNaoLida(n.id)}
-                                                className="px-3 py-1 rounded-full border border-gray-300 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                                                className="px-3 py-1 rounded-full border border-gray-300 bg-gray-100 text-gray-600 font-medium hover:bg-gray-200 transition-colors"
                                             >
                                                 Marcar como não lida
                                             </button>

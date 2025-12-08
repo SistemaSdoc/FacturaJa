@@ -126,10 +126,10 @@ export default function ViewInvoicePage() {
   // helper status classes (usa variáveis CSS para cores principais)
   const statusBadge = (s: Status) =>
     s === "Pago"
-      ? "inline-block px-3 py-1 rounded font-semibold text-green-700 bg-green-100 dark:bg-green-900/20 dark:text-green-300"
+      ? "inline-block px-3 py-1 rounded font-semibold text-green-700 bg-green-100"
       : s === "Pendente"
-      ? "inline-block px-3 py-1 rounded font-semibold text-yellow-800 bg-yellow-100 dark:bg-[#D9961A]/20 dark:text-yellow-300"
-      : "inline-block px-3 py-1 rounded font-semibold text-red-700 bg-red-100 dark:bg-red-900/20 dark:text-red-300";
+      ? "inline-block px-3 py-1 rounded font-semibold text-yellow-800 bg-yellow-100"
+      : "inline-block px-3 py-1 rounded font-semibold text-red-700 bg-red-100";
 
   return (
     <MainCliente>
@@ -237,7 +237,7 @@ export default function ViewInvoicePage() {
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
           }
-          .dark, body {
+          body {
             background-color: var(--bg) !important;
             color: var(--text-on-dark) !important;
           }

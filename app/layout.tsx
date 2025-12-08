@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { DarkModeProvider } from "./context/DarkModeProvider";
 import { AuthProvider } from "./context/AuthProvider";
 
 const geistSans = Geist({
@@ -23,11 +22,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="pt-BR">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <DarkModeProvider>
-          <AuthProvider>
-            {children}
-          </AuthProvider>
-        </DarkModeProvider>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

@@ -123,7 +123,7 @@ export default function PayInvoicePage() {
           {/* Items list (responsive) */}
           <div className="space-y-3">
             {fatura.items.map((it) => (
-              <div key={it.id} className={`${itemRowClass} bg-transparent md:bg-var(--card)`} >
+              <div key={it.id} className={`${itemRowClass}`} style={{ background: 'transparent' }} >
                 <div className="flex-1">
                   <div className="flex items-center justify-between gap-3">
                     <div>

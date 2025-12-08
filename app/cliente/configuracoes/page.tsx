@@ -2,10 +2,6 @@
 import React, { useState } from "react";
 import MainCliente from "../../components/MainCliente"; // ajuste o caminho conforme sua pasta
 import { FaUser, FaKey, FaGlobe } from "react-icons/fa";
-// IMPORT DO HOOK: ajuste o caminho conforme a tua estrutura.
-// Se o provider está em src/app/context/DarkModeProvider.tsx, então talvez precise ser:
-// import { useDarkMode } from "@/app/context/DarkModeProvider";
-import { useDarkMode } from "../../context/DarkModeProvider"; // <<-- ajuste se necessário
 
 export default function ClientConfig() {
   const [name, setName] = useState("João Cliente");
@@ -14,9 +10,6 @@ export default function ClientConfig() {
   const [language, setLanguage] = useState("pt");
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [notifications, setNotifications] = useState(true);
-
-  // usa o contexto global de tema
-  const { theme, resolvedTheme, setTheme, toggleTheme } = useDarkMode();
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,8 +24,7 @@ export default function ClientConfig() {
     }
   };
 
-  // helpers para estilos do toggle usando variáveis CSS (funciona tanto no claro quanto escuro)
-  const switchBg = resolvedTheme === 'dark' ? 'var(--accent)' : 'rgba(0,0,0,0.18)';
+  // estilos reutilizáveis (sem dependência de tema)
   const cardBg = 'var(--surface)'; // cards usam --surface
   const cardBorder = '2px solid rgba(0,0,0,0.04)'; // fallback — visual leve
   const textColor = 'var(--primary)';
@@ -42,7 +34,7 @@ export default function ClientConfig() {
       <div
         className="min-h-screen p-4 lg:p-6 transition-colors duration-300"
         style={{
-          background: 'var(--bg)', // usa variáveis do tema
+          background: 'var(--bg)', // usa variáveis definidas globalmente
           color: textColor,
         }}
       >
@@ -147,28 +139,6 @@ export default function ClientConfig() {
             <h2 className="text-xl font-semibold mb-4" style={{ color: 'var(--accent)' }}>
               Preferências
             </h2>
-
-            {/* Modo Escuro Toggle */}
-            <div className="flex justify-between items-center border rounded-lg p-3" style={{ borderColor: 'rgba(0,0,0,0.06)' }}>
-              <span>Modo Escuro</span>
-              <div
-                role="button"
-                tabIndex={0}
-                onClick={() => toggleTheme()}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') toggleTheme(); }}
-                className="w-12 h-6 flex items-center rounded-full p-1 cursor-pointer"
-                style={{ background: switchBg }}
-                aria-pressed={resolvedTheme === 'dark'}
-                title={`Tema atual: ${resolvedTheme}`}
-              >
-                <div
-                  className={`bg-white w-4 h-4 rounded-full shadow-md transform duration-300`}
-                  style={{
-                    transform: resolvedTheme === 'dark' ? 'translateX(1.2rem)' : 'translateX(0)',
-                  }}
-                />
-              </div>
-            </div>
 
             {/* Notificações Toggle */}
             <div className="flex justify-between items-center border rounded-lg p-3" style={{ borderColor: 'rgba(0,0,0,0.06)' }}>
