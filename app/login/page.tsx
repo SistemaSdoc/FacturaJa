@@ -1,12 +1,14 @@
 'use client';
+
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { login } from "../services/axios";
+import { useAuth } from "../context/AuthProvider"; // usa o contexto de autenticação
 
 const COLOR_PRIMARY = "#123859";
 const COLOR_ACCENT = "#F9941F";
 
+// Ícone animado
 const InvoiceIcon = ({ sizeClass = "w-10 h-10", color = COLOR_PRIMARY }) => (
   <motion.svg
     xmlns="http://www.w3.org/2000/svg"
@@ -29,22 +31,34 @@ const InvoiceIcon = ({ sizeClass = "w-10 h-10", color = COLOR_PRIMARY }) => (
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login } = useAuth(); // pega login do contexto
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [slug, setSlug] = useState(""); // novo campo
+  const [slug, setSlug] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError("");
+
     try {
-      // envia também o slogan se quiseres guardar no backend
-      console.log("Tentando logar com:", { email, password, slug });
-      const user = await login(email, password, slug);
-      console.log("Usuário logado:", user);
+      // 🔑 usa login do AuthProvider (que trata CSRF + autenticação)
+      const data = await login(email, password, slug);
+
+      // se api retornar sucesso, redireciona
+      // AuthProvider já atualiza user/empresa no contexto
       router.push("/dashboard");
-    } catch (err) {
-      alert("Erro ao logar: " + (err.response?.data.message || err.message));
+    } catch (err: any) {
+      console.error("Erro ao logar:", err);
+      // tratamento robusto de mensagens vindas do backend
+      const message =
+        err?.message ||
+        (Array.isArray(err?.errors) ? err.errors.join(", ") : undefined) ||
+        err?.response?.data?.message ||
+        "Erro desconhecido ao logar";
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -69,7 +83,10 @@ export default function LoginPage() {
           <h2 className="text-5xl font-extrabold text-center mb-4 text-white">
             Fatura<span style={{ color: COLOR_ACCENT }}>Já</span>
           </h2>
-          <p className="text-xl text-center leading-relaxed text-gray-200">
+          <p
+            className="text-xl text-center leading-relaxed"
+            style={{ color: "#F2F2F2" }}
+          >
             Plataforma inteligente para faturação rápida e compatível.
           </p>
         </div>
@@ -84,7 +101,6 @@ export default function LoginPage() {
             Faça login e comece a faturar de forma rápida e segura.
           </p>
 
-          {/* Formulário Email/Senha/Slogan */}
           <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4 mb-6">
             <input
               type="email"
@@ -104,10 +120,11 @@ export default function LoginPage() {
             />
             <input
               type="text"
-              placeholder="Slogan da empresa"
+              placeholder="Slug da empresa"
               value={slug}
               onChange={(e) => setSlug(e.target.value)}
               className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#F9941F]"
+              required
             />
             <button
               type="submit"
@@ -117,6 +134,8 @@ export default function LoginPage() {
               {loading ? "Entrando..." : "Login"}
             </button>
           </form>
+
+          {error && <p className="text-red-600 mt-2 text-center">{error}</p>}
         </div>
       </motion.div>
     </div>

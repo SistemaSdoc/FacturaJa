@@ -1,104 +1,107 @@
 'use client';
-import React, { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { createAuth0Client, Auth0Client } from "@auth0/auth0-spa-js";
 
-interface AuthContextType {
-  user: any;
-  loading: boolean;
-  login: () => void;
-  logout: () => void;
-}
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import {
+  login as apiLogin,
+  logout as apiLogout,
+  getUser,
+  getEmpresaAuth,
+  normalizeLogoUrl
+} from '../services/axios'; // ajusta o path se necessário
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-let auth0Client: Auth0Client | null = null;
-
-const getAuth0Client = async () => {
-  if (auth0Client) return auth0Client;
-
-  console.log("Tentando criar Auth0Client...");
-  console.log("Domain:", process.env.NEXT_PUBLIC_AUTH0_DOMAIN);
-  console.log("Client ID:", process.env.NEXT_PUBLIC_AUTH0_CLIENT_ID);
-  console.log("Redirect URI:", process.env.NEXT_PUBLIC_AUTH0_REDIRECT_URI);
-
-  if (!process.env.NEXT_PUBLIC_AUTH0_DOMAIN || !process.env.NEXT_PUBLIC_AUTH0_CLIENT_ID) {
-    throw new Error("Auth0 Domain ou Client ID não definidos. Verifique seu .env.local");
-  }
-
-auth0Client = await createAuth0Client({
-  domain: process.env.NEXT_PUBLIC_AUTH0_DOMAIN!,
-  clientId: process.env.NEXT_PUBLIC_AUTH0_CLIENT_ID!,
-  authorizationParams: {
-    redirect_uri: process.env.NEXT_PUBLIC_AUTH0_REDIRECT_URI!,
-  },
-  cacheLocation: "localstorage",
-  useRefreshTokens: true,
-});
-
-
-  console.log("Auth0Client criado com sucesso!");
-  return auth0Client;
+type User = any;
+type Empresa = {
+  id?: number;
+  nome?: string;
+  slug?: string;
+  logo?: string | null;
+  email?: string;
+  telefone?: string;
+  endereco?: string;
+  [k: string]: any;
 };
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<any>(null);
+type AuthContextValue = {
+  user: User | null;
+  empresa: Empresa | null;
+  loading: boolean;
+  login: (email: string, pass: string, slug: string) => Promise<any>;
+  logout: () => Promise<void>;
+};
+
+const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [empresa, setEmpresa] = useState<Empresa | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Carrega user + empresa ao montar (se estiver autenticado via cookie/Sanctum)
   useEffect(() => {
-    const initAuth = async () => {
+    let mounted = true;
+    (async () => {
       try {
-        const client = await getAuth0Client();
-
-        // Trata o redirecionamento do Auth0
-        if (window.location.search.includes("code=") && window.location.search.includes("state=")) {
-          console.log("Processando callback do Auth0...");
-          await client.handleRedirectCallback();
-          window.history.replaceState({}, document.title, "/dashboard");
-        }
-
-        const userData = await client.getUser();
-        console.log("Usuário autenticado:", userData);
-        setUser(userData);
+        setLoading(true);
+        const u = await getUser(); // usa endpoint /dashboard que tu tens
+        const e = await getEmpresaAuth();
+        if (!mounted) return;
+        setUser(u ?? null);
+        setEmpresa(e ?? null);
       } catch (err) {
-        console.error("Erro na inicialização do Auth0:", err);
-        alert("Erro na autenticação. Verifique o console.");
+        if (!mounted) return;
+        setUser(null);
+        setEmpresa(null);
       } finally {
-        setLoading(false);
+        if (mounted) setLoading(false);
       }
+    })();
+    return () => {
+      mounted = false;
     };
-
-    initAuth();
   }, []);
 
-  const login = async () => {
-    try {
-      const client = await getAuth0Client();
-      await client.loginWithRedirect();
-    } catch (err) {
-      console.error("Erro ao iniciar login:", err);
-      alert("Erro ao tentar iniciar sessão. Verifique o console.");
+  // Faz login: usa a função do axios (que já pega CSRF)
+  async function login(email: string, password: string, empresa_slug: string) {
+    const data = await apiLogin(email, password, empresa_slug);
+    // Se a API retornar user/empresa no corpo, usa-os; caso contrário recarrega via endpoints
+    if (data?.user) setUser(data.user);
+    if (data?.empresa) setEmpresa(data.empresa);
+    // se API não retornar, tenta buscar:
+    if (!data?.user) {
+      try {
+        const u = await getUser();
+        setUser(u ?? null);
+      } catch {}
     }
-  };
+    if (!data?.empresa) {
+      try {
+        const e = await getEmpresaAuth();
+        setEmpresa(e ?? null);
+      } catch {}
+    }
+    return data;
+  }
 
-  const logout = async () => {
+  async function logout() {
     try {
-      const client = await getAuth0Client();
-      client.logout({ returnTo: window.location.origin });
+      await apiLogout();
+    } catch (e) {
+      // ignorar falhas no logout remoto
+    } finally {
       setUser(null);
-    } catch (err) {
-      console.error("Erro ao sair:", err);
+      setEmpresa(null);
     }
-  };
+  }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, empresa, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
-};
+}
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error("useAuth must be used within an AuthProvider");
-  return context;
-};
+export function useAuth() {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth must be used inside AuthProvider');
+  return ctx;
+}

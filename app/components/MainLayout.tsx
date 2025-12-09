@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import React, { ReactNode, useState } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   Menu,
   LogOut,
@@ -14,24 +14,36 @@ import {
   Settings,
   User,
 } from 'lucide-react';
+import { useAuth } from '../context/AuthProvider';
+import { normalizeLogoUrl } from '../utils/normalizeLogo';
 
 interface MainEmpresaProps {
   children: ReactNode;
-  empresaName?: string;
-  userName?: string;
-  userPhoto?: string;
-  empresaLogo?: string;
 }
 
-export default function MainEmpresa({
-  children,
-  empresaName = 'Minha Empresa',
-  userName = 'Nome empresa',
-  userPhoto,
-  empresaLogo,
-}: MainEmpresaProps) {
+export default function MainEmpresa({ children }: MainEmpresaProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const { user, empresa, loading, logout } = useAuth();
+
+  // valores finais (prioriza dados vindos do contexto)
+  const empresaName = !loading ? empresa?.nome ?? 'Minha Empresa' : 'Carregando...';
+  const empresaLogoRaw = empresa?.logo ?? null;
+  const empresaLogo = empresaLogoRaw ? normalizeLogoUrl(empresaLogoRaw) : '/logo-placeholder.png';
+  const finalUserName = user?.name ?? 'Usuário';
+  const userPhoto = user?.photo ?? null;
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (e) {
+      // ignorar, só garantir redirect
+    } finally {
+      router.push('/login');
+    }
+  };
 
   const menuItems = [
     { label: 'Dashboard', path: '/dashboard', icon: <BarChart size={16} />, exact: true },
@@ -51,29 +63,42 @@ export default function MainEmpresa({
         className={`
           fixed top-0 left-0 h-full bg-white text-[#123859] shadow-md p-4 flex flex-col justify-between
           transition-all duration-300 z-50
-          ${sidebarOpen ? 'w-64' : 'w-0'}
+          ${sidebarOpen ? 'w-64' : 'w-0 overflow-hidden'}
           md:relative md:w-64 md:h-auto
         `}
+        aria-hidden={!sidebarOpen && typeof window !== 'undefined' && window.innerWidth < 768}
       >
         <div>
-          {/* Logo */}
+          {/* Logo + Nome */}
           <div className="flex items-center justify-between mb-6">
             <div className={`flex items-center gap-2 ${!sidebarOpen ? 'justify-center w-full' : ''}`}>
               {empresaLogo && (
                 <img
                   src={empresaLogo}
-                  alt="Logo"
+                  alt={empresa?.nome ? `${empresa.nome} logo` : 'Logo'}
                   className={`h-8 w-8 rounded-full object-cover ${!sidebarOpen ? 'mx-auto' : ''}`}
                 />
               )}
-              <span className={`${!sidebarOpen ? 'hidden' : 'font-bold text-lg'}`}>{empresaName}</span>
+              <span className={`${!sidebarOpen ? 'hidden' : 'font-bold text-lg'}`}>
+                {empresaName}
+              </span>
             </div>
           </div>
 
+          {/* Informações rápidas da empresa */}
+          {sidebarOpen && empresa && !loading && (
+            <div className="text-sm text-gray-600 mb-4 space-y-1">
+              {empresa.nif && <p><strong>NIF:</strong> {empresa.nif}</p>}
+              {empresa.email && <p><strong>Email:</strong> {empresa.email}</p>}
+              {empresa.telefone && <p><strong>Telefone:</strong> {empresa.telefone}</p>}
+              {empresa.endereco && <p><strong>Endereço:</strong> {empresa.endereco}</p>}
+            </div>
+          )}
+
           {/* Menu */}
-          <nav className="flex flex-col gap-2 relative">
+          <nav className="flex flex-col gap-2 relative" aria-label="Main navigation">
             {menuItems.map((item) => {
-              const isActive = item.exact ? pathname === item.path : pathname?.startsWith(item.path);
+              const isActive = item.exact ? pathname === item.path : !!pathname?.startsWith(item.path);
               return (
                 <Link
                   key={item.path}
@@ -83,7 +108,7 @@ export default function MainEmpresa({
                   }`}
                 >
                   {isActive && (
-                    <span className="absolute left-0 top-0 h-full w-1 bg-[#F9941F] rounded-tr-lg rounded-br-lg"></span>
+                    <span className="absolute left-0 top-0 h-full w-1 bg-[#F9941F] rounded-tr-lg rounded-br-lg" />
                   )}
                   <span className="relative flex items-center gap-3 w-full">
                     <span className={`transition-colors duration-200 ${isActive ? 'text-white' : ''}`}>
@@ -100,27 +125,23 @@ export default function MainEmpresa({
         </div>
 
         {/* Logout */}
-        <div className={`${!sidebarOpen ? 'flex justify-center' : ''}`}>
-          <Link
-            href="/dashboard/logout"
+        <div className={`${!sidebarOpen ? 'flex justify-center' : ''} mt-6`}>
+          <button
+            onClick={handleLogout}
             className="sm:w-full md:w-auto px-3 py-2 rounded text-white bg-[#F9941F] hover:brightness-95 flex items-center justify-center gap-2 transition-all duration-150"
+            aria-label="Logout"
           >
             <LogOut size={16} />
             <span className={`${!sidebarOpen ? 'hidden md:inline' : ''}`}>Logout</span>
-          </Link>
+          </button>
         </div>
       </aside>
 
       {/* CONTEÚDO PRINCIPAL */}
-      <div
-        className={`flex-1 flex flex-col transition-all duration-300 ${
-          sidebarOpen ? 'md:ml-64' : 'md:ml-0'
-        }`}
-      >
+      <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarOpen ? 'md:ml-64' : 'md:ml-0'}`}>
         {/* NAVBAR */}
         <header className="flex items-center justify-between bg-white shadow px-4 py-4 sm:py-6">
           <div className="flex items-center gap-4">
-            {/* ÚNICO BOTÃO DE TOGGLE */}
             <button
               aria-label="Toggle sidebar"
               onClick={() => setSidebarOpen((s) => !s)}
@@ -128,22 +149,29 @@ export default function MainEmpresa({
             >
               <Menu size={20} />
             </button>
-            {empresaLogo && <img src={empresaLogo} alt="Logo" className="h-8 w-8 rounded-full object-cover" />}
+
+            {empresaLogo && (
+              <img src={empresaLogo} alt={empresa?.nome ? `${empresa.nome} logo` : 'Logo'} className="h-8 w-8 rounded-full object-cover" />
+            )}
+
             <span className="font-bold text-[#123859]">{empresaName}</span>
           </div>
+
           <div className="flex items-center gap-4">
-            <button className="relative p-2 rounded hover:bg-[#E5E5E5] transition-colors duration-150">
+            <button className="relative p-2 rounded hover:bg-[#E5E5E5] transition-colors duration-150" aria-label="Notifications">
               <Bell size={20} />
-              <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500"></span>
+              <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500" />
             </button>
+
             {userPhoto ? (
-              <img src={userPhoto} alt="User" className="h-8 w-8 rounded-full object-cover" />
+              <img src={userPhoto} alt={finalUserName ?? 'User'} className="h-8 w-8 rounded-full object-cover" />
             ) : (
               <div className="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center text-white">
-                {userName[0]}
+                {(finalUserName && finalUserName[0]) ?? 'U'}
               </div>
             )}
-            <span className="font-medium text-[#123859] hidden sm:inline">{userName}</span>
+
+            <span className="font-medium text-[#123859] hidden sm:inline">{!loading ? finalUserName : ''}</span>
           </div>
         </header>
 
