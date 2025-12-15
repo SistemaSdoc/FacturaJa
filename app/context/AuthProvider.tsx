@@ -71,13 +71,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const u = await getUser();
         setUser(u ?? null);
-      } catch {}
+      } catch { }
     }
     if (!data?.empresa) {
       try {
         const e = await getEmpresaAuth();
         setEmpresa(e ?? null);
-      } catch {}
+      } catch { }
     }
     return data;
   }

@@ -37,11 +37,11 @@ export default function MainEmpresa({ children }: MainEmpresaProps) {
 
   const handleLogout = async () => {
     try {
-      await logout();
+      await logout(); // chama logout da API (já retorna { message })
     } catch (e) {
-      // ignorar, só garantir redirect
+      console.error("Erro no logout:", e);
     } finally {
-      router.push('/login');
+      router.push('/login'); // garante redirect
     }
   };
 
