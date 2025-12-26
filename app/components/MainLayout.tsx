@@ -26,10 +26,10 @@ export default function MainEmpresa({ children }: MainEmpresaProps) {
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const { user, empresa, loading, logout } = useAuth();
+  const { user, empresa, tenant, loading, logout } = useAuth();
 
-  // valores finais (prioriza dados vindos do contexto)
-  const empresaName = !loading ? empresa?.nome ?? 'Minha Empresa' : 'Carregando...';
+  // valores finais (prioriza tenant.name para o nome da empresa)
+  const empresaName = !loading ? tenant?.name ?? 'Minha Empresa' : 'Carregando...';
   const empresaLogoRaw = empresa?.logo ?? null;
   const empresaLogo = empresaLogoRaw ? normalizeLogoUrl(empresaLogoRaw) : '/logo-placeholder.png';
   const finalUserName = user?.name ?? 'Usuário';
@@ -37,7 +37,7 @@ export default function MainEmpresa({ children }: MainEmpresaProps) {
 
   const handleLogout = async () => {
     try {
-      await logout(); // chama logout da API (já retorna { message })
+      await logout(); // chama logout da API
     } catch (e) {
       console.error("Erro no logout:", e);
     } finally {
@@ -75,7 +75,7 @@ export default function MainEmpresa({ children }: MainEmpresaProps) {
               {empresaLogo && (
                 <img
                   src={empresaLogo}
-                  alt={empresa?.nome ? `${empresa.nome} logo` : 'Logo'}
+                  alt={tenant?.name ? `${tenant.name} logo` : 'Logo'}
                   className={`h-8 w-8 rounded-full object-cover ${!sidebarOpen ? 'mx-auto' : ''}`}
                 />
               )}
@@ -88,7 +88,7 @@ export default function MainEmpresa({ children }: MainEmpresaProps) {
           {/* Informações rápidas da empresa */}
           {sidebarOpen && empresa && !loading && (
             <div className="text-sm text-gray-600 mb-4 space-y-1">
-              {empresa.nif && <p><strong>NIF:</strong> {empresa.nif}</p>}
+              {tenant?.subdomain && <p><strong>Subdomínio:</strong> {tenant.subdomain}</p>}
               {empresa.email && <p><strong>Email:</strong> {empresa.email}</p>}
               {empresa.telefone && <p><strong>Telefone:</strong> {empresa.telefone}</p>}
               {empresa.endereco && <p><strong>Endereço:</strong> {empresa.endereco}</p>}
@@ -151,7 +151,7 @@ export default function MainEmpresa({ children }: MainEmpresaProps) {
             </button>
 
             {empresaLogo && (
-              <img src={empresaLogo} alt={empresa?.nome ? `${empresa.nome} logo` : 'Logo'} className="h-8 w-8 rounded-full object-cover" />
+              <img src={empresaLogo} alt={tenant?.name ? `${tenant.name} logo` : 'Logo'} className="h-8 w-8 rounded-full object-cover" />
             )}
 
             <span className="font-bold text-[#123859]">{empresaName}</span>

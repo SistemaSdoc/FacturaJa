@@ -2,36 +2,36 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import MainLayout from '../../components/MainLayout';
-import { getClientes, deleteCliente, getCsrfCookie, getUser } from '../../services/axios';
+import { getUsers, deleteUser, getUser } from '../../services/axios';
 
-interface Cliente {
-  id: number;
-  nome: string;
+interface TenantUser {
+  id: string; // UUID
+  name: string;
   email?: string;
   telefone?: string;
+  role?: string;
   status?: 'Ativo' | 'Inativo';
 }
 
-export default function ClientesPage() {
+export default function UsersPage() {
   const router = useRouter();
 
-  const [clientes, setClientes] = useState<Cliente[]>([]);
-  const [selected, setSelected] = useState<number[]>([]);
+  const [users, setUsers] = useState<TenantUser[]>([]);
+  const [selected, setSelected] = useState<string[]>([]);
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [loading, setLoading] = useState(false);
-  const [modal, setModal] = useState<{ open: boolean; action: string; id?: number }>({ open: false, action: '', id: undefined });
+  const [modal, setModal] = useState<{ open: boolean; action: string; id?: string }>({ open: false, action: '', id: undefined });
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // ----------------- INIT AUTENTICAÇÃO -----------------
   const init = useCallback(async () => {
     setLoading(true);
     try {
-      await getCsrfCookie();  // garante CSRF
-      await getUser();         // valida usuário logado
-      await fetchClientes();   // carrega clientes após autenticação
-    } catch (error) {
-      router.push('/login');   // redireciona se não autenticado
+      await getUser();        // valida usuário logado
+      await fetchUsers();     // carrega usuários após autenticação
+    } catch {
+      router.push('/login');  // redireciona se não autenticado
     } finally {
       setLoading(false);
     }
@@ -41,17 +41,17 @@ export default function ClientesPage() {
     init();
   }, [init]);
 
-  // ----------------- FETCH CLIENTES -----------------
-  const fetchClientes = useCallback(async () => {
+  // ----------------- FETCH USERS -----------------
+  const fetchUsers = useCallback(async () => {
     setLoading(true);
     setErrorMsg(null);
     try {
-      let data = await getClientes();
-      if (search) data = data.filter(c => c.nome.toLowerCase().includes(search.toLowerCase()));
-      if (filterStatus) data = data.filter(c => c.status === filterStatus);
-      setClientes(data);
+      let data = await getUsers();
+      if (search) data = data.filter(u => u.name.toLowerCase().includes(search.toLowerCase()));
+      if (filterStatus) data = data.filter(u => u.status === filterStatus);
+      setUsers(data);
     } catch (error: any) {
-      setErrorMsg(error.message || 'Erro ao carregar clientes');
+      setErrorMsg(error.message || 'Erro ao carregar usuários');
     } finally {
       setLoading(false);
     }
@@ -59,27 +59,27 @@ export default function ClientesPage() {
 
   // ----------------- DEBOUNCE -----------------
   useEffect(() => {
-    const timeout = setTimeout(() => fetchClientes(), 300);
+    const timeout = setTimeout(() => fetchUsers(), 300);
     return () => clearTimeout(timeout);
-  }, [fetchClientes]);
+  }, [fetchUsers]);
 
   // ----------------- SELEÇÃO -----------------
-  const toggleSelect = (id: number) => {
+  const toggleSelect = (id: string) => {
     setSelected(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
   };
 
   // ----------------- AÇÕES -----------------
-  const handleAction = async (id: number | number[], action: string) => {
+  const handleAction = async (id: string | string[], action: string) => {
     if (action !== 'delete') return;
     setLoading(true);
     try {
       if (Array.isArray(id)) {
-        await Promise.all(id.map(cid => deleteCliente(cid)));
+        await Promise.all(id.map(uid => deleteUser(uid)));
       } else {
-        await deleteCliente(id);
+        await deleteUser(id);
       }
       setSelected([]);
-      await fetchClientes();  // atualiza automaticamente a lista
+      await fetchUsers();
       setModal({ open: false, action: '' });
     } catch (error: any) {
       alert(error.message || 'Erro ao executar ação');
@@ -88,27 +88,27 @@ export default function ClientesPage() {
     }
   };
 
-  const totalAtivos = clientes.filter(c => c.status === 'Ativo').length;
-  const totalInativos = clientes.filter(c => c.status === 'Inativo').length;
+  const totalAtivos = users.filter(u => u.status === 'Ativo').length;
+  const totalInativos = users.filter(u => u.status === 'Inativo').length;
 
   return (
     <MainLayout>
-      {/* Título + Novo Cliente */}
+      {/* Título + Novo Usuário */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-[#123859]">Clientes</h1>
+        <h1 className="text-2xl font-bold text-[#123859]">Usuários</h1>
         <button
-          onClick={() => router.push('/dashboard/Clientes/novo-cliente')}
+          onClick={() => router.push('/dashboard/Users/novo-user')}
           className="bg-[#F9941F] text-white px-4 py-2 rounded hover:brightness-95"
         >
-          + Novo Cliente
+          + Novo Usuário
         </button>
       </div>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-white p-4 rounded shadow flex flex-col items-center">
-          <p className="text-gray-500">Total de Clientes</p>
-          <p className="text-2xl font-bold text-[#123859]">{clientes.length}</p>
+          <p className="text-gray-500">Total de Usuários</p>
+          <p className="text-2xl font-bold text-[#123859]">{users.length}</p>
         </div>
         <div className="bg-white p-4 rounded shadow flex flex-col items-center">
           <p className="text-gray-500">Ativos</p>
@@ -152,8 +152,8 @@ export default function ClientesPage() {
       {loading && <div className="text-center py-4 text-[#123859] font-semibold">Carregando...</div>}
       {errorMsg && !loading && <div className="text-center py-4 text-red-500 font-semibold">{errorMsg}</div>}
 
-      {/* Tabela de Clientes */}
-      {!loading && clientes.length > 0 && (
+      {/* Tabela de Usuários */}
+      {!loading && users.length > 0 && (
         <div className="overflow-x-auto">
           <table className="w-full border-collapse bg-white shadow rounded">
             <thead className="bg-[#E5E5E5]">
@@ -161,8 +161,8 @@ export default function ClientesPage() {
                 <th className="p-3">
                   <input
                     type="checkbox"
-                    checked={selected.length === clientes.length && clientes.length > 0}
-                    onChange={e => setSelected(e.target.checked ? clientes.map(c => c.id) : [])}
+                    checked={selected.length === users.length && users.length > 0}
+                    onChange={e => setSelected(e.target.checked ? users.map(u => u.id) : [])}
                   />
                 </th>
                 <th className="p-3 text-left">Nome</th>
@@ -173,21 +173,21 @@ export default function ClientesPage() {
               </tr>
             </thead>
             <tbody>
-              {clientes.map(c => (
-                <tr key={c.id} className="border-t hover:bg-gray-50">
+              {users.map(u => (
+                <tr key={u.id} className="border-t hover:bg-gray-50">
                   <td className="p-3">
-                    <input type="checkbox" checked={selected.includes(c.id)} onChange={() => toggleSelect(c.id)} />
+                    <input type="checkbox" checked={selected.includes(u.id)} onChange={() => toggleSelect(u.id)} />
                   </td>
-                  <td className="p-3 font-medium text-[#123859]">{c.nome}</td>
-                  <td className="p-3">{c.email || '-'}</td>
-                  <td className="p-3">{c.telefone || '-'}</td>
-                  <td className={`p-3 font-semibold ${c.status === 'Ativo' ? 'text-green-500' : 'text-red-500'}`}>
-                    {c.status || '-'}
+                  <td className="p-3 font-medium text-[#123859]">{u.name}</td>
+                  <td className="p-3">{u.email || '-'}</td>
+                  <td className="p-3">{u.telefone || '-'}</td>
+                  <td className={`p-3 font-semibold ${u.status === 'Ativo' ? 'text-green-500' : 'text-red-500'}`}>
+                    {u.status || '-'}
                   </td>
                   <td className="p-3 flex gap-2">
-                    <button className="text-[#123859]" onClick={() => router.push(`/dashboard/Clientes/${c.id}/ver`)}>Ver</button>
-                    <button className="text-[#F9941F]" onClick={() => router.push(`/dashboard/Clientes/${c.id}/editar`)}>Editar</button>
-                    <button className="text-red-500" onClick={() => setModal({ open: true, action: 'delete', id: c.id })}>Apagar</button>
+                    <button className="text-[#123859]" onClick={() => router.push(`/dashboard/Users/${u.id}/ver`)}>Ver</button>
+                    <button className="text-[#F9941F]" onClick={() => router.push(`/dashboard/Users/${u.id}/editar`)}>Editar</button>
+                    <button className="text-red-500" onClick={() => setModal({ open: true, action: 'delete', id: u.id })}>Apagar</button>
                   </td>
                 </tr>
               ))}
@@ -202,7 +202,8 @@ export default function ClientesPage() {
           <div className="bg-white p-6 rounded shadow w-96">
             <h2 className="text-xl font-bold text-[#123859] mb-4">Confirmar ação</h2>
             <p className="mb-4">
-              Tem certeza que deseja {modal.action} {modal.id ? 'este cliente?' : 'os clientes selecionados?'}
+              Tem certeza que deseja {modal.action === 'delete' ? 'apagar' : modal.action}{' '}
+              {modal.id ? 'este usuário?' : 'os usuários selecionados?'}
             </p>
             <div className="flex justify-end gap-2">
               <button

@@ -1,14 +1,12 @@
 'use client';
 
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { useAuth } from "../context/AuthProvider"; // usa o contexto de autenticação
+import { useAuth } from "../context/AuthProvider";
 
 const COLOR_PRIMARY = "#123859";
 const COLOR_ACCENT = "#F9941F";
 
-// Ícone animado
 const InvoiceIcon = ({ sizeClass = "w-10 h-10", color = COLOR_PRIMARY }) => (
   <motion.svg
     xmlns="http://www.w3.org/2000/svg"
@@ -30,11 +28,10 @@ const InvoiceIcon = ({ sizeClass = "w-10 h-10", color = COLOR_PRIMARY }) => (
 );
 
 export default function LoginPage() {
-  const router = useRouter();
-  const { login } = useAuth(); // pega login do contexto
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [slug, setSlug] = useState("");
+  const [tenantSubdomain, setTenantSubdomain] = useState(""); // NOVO CAMPO
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -43,20 +40,19 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
 
-    try {
-      // 🔑 usa login do AuthProvider (que trata CSRF + autenticação)
-      const data = await login(email, password, slug);
+    if (!tenantSubdomain) {
+      setError("Informe o subdomínio da sua empresa");
+      setLoading(false);
+      return;
+    }
 
-      // se api retornar sucesso, redireciona
-      // AuthProvider já atualiza user/empresa no contexto
-      router.push("/dashboard");
+    try {
+      await login(email, password, tenantSubdomain);
     } catch (err: any) {
       console.error("Erro ao logar:", err);
-      // tratamento robusto de mensagens vindas do backend
       const message =
         err?.message ||
         (Array.isArray(err?.errors) ? err.errors.join(", ") : undefined) ||
-        err?.response?.data?.message ||
         "Erro desconhecido ao logar";
       setError(message);
     } finally {
@@ -66,76 +62,91 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 font-inter relative overflow-hidden">
+      {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-r from-[#123859] via-[#F9941F] to-[#123859] animate-gradient-x opacity-20 z-0"></div>
 
+      {/* Login card */}
       <motion.div
-        className="relative w-full max-w-5xl bg-white rounded-3xl shadow-2xl overflow-hidden flex z-10"
+        className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col z-10 p-6"
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7 }}
       >
-        {/* Lado esquerdo */}
-        <div
-          className="hidden lg:flex flex-col items-center justify-center p-10 xl:p-16 text-white w-1/2"
-          style={{ backgroundColor: COLOR_PRIMARY }}
-        >
-          <InvoiceIcon sizeClass="w-24 h-24 mb-4" color={COLOR_ACCENT} />
-          <h2 className="text-5xl font-extrabold text-center mb-4 text-white">
-            Fatura<span style={{ color: COLOR_ACCENT }}>Já</span>
-          </h2>
-          <p
-            className="text-xl text-center leading-relaxed"
-            style={{ color: "#F2F2F2" }}
+        <InvoiceIcon sizeClass="w-16 h-16 mb-4 mx-auto" color={COLOR_PRIMARY} />
+        <h2 className="text-2xl font-bold text-center text-[#123859] mb-2">Login</h2>
+        <p className="text-sm text-gray-500 text-center mb-4">
+          Entre com seu email, senha e subdomínio para acessar o sistema
+        </p>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+          <input
+            type="text"
+            placeholder="Subdomínio da empresa"
+            value={tenantSubdomain}
+            onChange={(e) => setTenantSubdomain(e.target.value)}
+            className="w-full px-4 py-2 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#F9941F]"
+            required
+          />
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full px-4 py-2 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#F9941F]"
+            required
+          />
+          <input
+            type="password"
+            placeholder="Senha"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full px-4 py-2 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#F9941F]"
+            required
+          />
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-2 mt-2 rounded-xl font-semibold bg-[#123859] text-white hover:bg-[#0f2b4c] disabled:opacity-50 transition flex items-center justify-center gap-2"
           >
-            Plataforma inteligente para faturação rápida e compatível.
-          </p>
-        </div>
+            {loading ? (
+              <>
+                <svg
+                  className="animate-spin h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                  ></path>
+                </svg>
+                Entrando...
+              </>
+            ) : (
+              "Entrar"
+            )}
+          </button>
+        </form>
 
-        {/* Lado direito */}
-        <div className="w-full lg:w-1/2 p-8 sm:p-10 flex flex-col justify-center items-center">
-          <InvoiceIcon sizeClass="w-16 h-16 mb-4 lg:hidden" color={COLOR_PRIMARY} />
-          <h2 className="text-3xl font-extrabold mt-2 text-[#123859] text-center">
-            Bem-vindo ao <span style={{ color: COLOR_ACCENT }}>FaturaJá</span>
-          </h2>
-          <p className="text-sm text-gray-500 mt-2 mb-6 text-center">
-            Faça login e comece a faturar de forma rápida e segura.
-          </p>
+        {/* Error message */}
+        {error && <p className="text-red-600 mt-2 text-center">{error}</p>}
 
-          <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4 mb-6">
-            <input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#F9941F]"
-              required
-            />
-            <input
-              type="password"
-              placeholder="Senha"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#F9941F]"
-              required
-            />
-            <input
-              type="text"
-              placeholder="Slug da empresa"
-              value={slug}
-              onChange={(e) => setSlug(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#F9941F]"
-              required
-            />
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 rounded-xl font-semibold transition bg-[#123859] hover:bg-[#0f2b4c] text-white disabled:opacity-50"
-            >
-              {loading ? "Entrando..." : "Login"}
-            </button>
-          </form>
-
-          {error && <p className="text-red-600 mt-2 text-center">{error}</p>}
+        {/* Register link */}
+        <div className="mt-4 text-center text-sm">
+          <a href="/register" className="text-[#123859] hover:text-[#F9941F]">
+            Não tem conta? Cadastre-se
+          </a>
         </div>
       </motion.div>
     </div>
