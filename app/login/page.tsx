@@ -2,11 +2,14 @@
 
 import React, { useState } from "react";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useAuth } from "../context/AuthProvider";
 
 const COLOR_PRIMARY = "#123859";
 const COLOR_ACCENT = "#F9941F";
 
+// ----------------- ICON -----------------
 const InvoiceIcon = ({ sizeClass = "w-10 h-10", color = COLOR_PRIMARY }) => (
   <motion.svg
     xmlns="http://www.w3.org/2000/svg"
@@ -27,33 +30,73 @@ const InvoiceIcon = ({ sizeClass = "w-10 h-10", color = COLOR_PRIMARY }) => (
   </motion.svg>
 );
 
+// ----------------- INPUT REUTILIZÁVEL -----------------
+const InputField = ({
+  type,
+  placeholder,
+  value,
+  onChange,
+}: {
+  type: string;
+  placeholder: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}) => (
+  <input
+    type={type}
+    placeholder={placeholder}
+    value={value}
+    onChange={onChange}
+    className="w-full px-4 py-2 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#F9941F]"
+    required
+  />
+);
+
+// ----------------- LOGIN PAGE -----------------
 export default function LoginPage() {
   const { login } = useAuth();
+  const router = useRouter();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [tenantSubdomain, setTenantSubdomain] = useState(""); // NOVO CAMPO
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
+
     setLoading(true);
     setError("");
 
-    if (!tenantSubdomain) {
-      setError("Informe o subdomínio da sua empresa");
-      setLoading(false);
-      return;
-    }
-
     try {
-      await login(email, password, tenantSubdomain);
+      // Se quiser multi-tenant, adicione aqui o subdomínio
+      const tenantSubdomain = undefined; // ex: pegar de input ou localStorage
+      const data = await login(email, password, tenantSubdomain);
+
+      if (!data?.success) {
+        setError(data?.message || "Falha no login");
+        return;
+      }
+
+      router.push(data.redirect || "/dashboard");
     } catch (err: any) {
       console.error("Erro ao logar:", err);
-      const message =
-        err?.message ||
-        (Array.isArray(err?.errors) ? err.errors.join(", ") : undefined) ||
-        "Erro desconhecido ao logar";
+
+      let message = "Erro desconhecido ao logar";
+
+      // Se o erro vier com mensagem
+      if (err?.message) {
+        message = err.message;
+      }
+
+      // Se houver erros detalhados
+      if (err?.errors && typeof err.errors === "object") {
+        message = Object.entries(err.errors)
+          .map(([field, msgs]: any) => `${field}: ${msgs.join(", ")}`)
+          .join(" | ");
+      }
+
       setError(message);
     } finally {
       setLoading(false);
@@ -61,7 +104,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 font-inter relative overflow-hidden">
+    <div
+      className="min-h-screen flex items-center justify-center p-4 sm:p-6 font-inter relative overflow-hidden"
+      aria-busy={loading}
+    >
       {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-r from-[#123859] via-[#F9941F] to-[#123859] animate-gradient-x opacity-20 z-0"></div>
 
@@ -73,37 +119,19 @@ export default function LoginPage() {
         transition={{ duration: 0.7 }}
       >
         <InvoiceIcon sizeClass="w-16 h-16 mb-4 mx-auto" color={COLOR_PRIMARY} />
-        <h2 className="text-2xl font-bold text-center text-[#123859] mb-2">Login</h2>
+
+        <h2 className="text-2xl font-bold text-center text-[#123859] mb-2">
+          Login
+        </h2>
+
         <p className="text-sm text-gray-500 text-center mb-4">
-          Entre com seu email, senha e subdomínio para acessar o sistema
+          Entre com seu email e senha para acessar o sistema
         </p>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          <input
-            type="text"
-            placeholder="Subdomínio da empresa"
-            value={tenantSubdomain}
-            onChange={(e) => setTenantSubdomain(e.target.value)}
-            className="w-full px-4 py-2 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#F9941F]"
-            required
-          />
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-2 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#F9941F]"
-            required
-          />
-          <input
-            type="password"
-            placeholder="Senha"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-2 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#F9941F]"
-            required
-          />
+          <InputField type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <InputField type="password" placeholder="Senha" value={password} onChange={(e) => setPassword(e.target.value)} />
+
           <button
             type="submit"
             disabled={loading}
@@ -117,19 +145,8 @@ export default function LoginPage() {
                   fill="none"
                   viewBox="0 0 24 24"
                 >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                  ></path>
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
                 </svg>
                 Entrando...
               </>
@@ -139,14 +156,12 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* Error message */}
-        {error && <p className="text-red-600 mt-2 text-center">{error}</p>}
+        {error && <p className="text-red-600 mt-3 text-center text-sm">{error}</p>}
 
-        {/* Register link */}
         <div className="mt-4 text-center text-sm">
-          <a href="/register" className="text-[#123859] hover:text-[#F9941F]">
+          <Link href="/register" className="text-[#123859] hover:text-[#F9941F]">
             Não tem conta? Cadastre-se
-          </a>
+          </Link>
         </div>
       </motion.div>
     </div>

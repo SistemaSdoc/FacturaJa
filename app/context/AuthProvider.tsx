@@ -43,7 +43,7 @@ type AuthContextValue = {
   empresa: Empresa | null;
   tenant: Tenant | null;
   loading: boolean;
-  login: (email: string, password: string, tenantSubdomain: string) => Promise<any>;
+  login: (email: string, password: string, tenantSubdomain?: string) => Promise<any>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
 };
@@ -58,7 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Carrega user + tenant + empresa ao montar
+  // ----------------- CARREGAR DADOS AO MONTAR -----------------
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -70,11 +70,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const t = await getTenant();
 
           if (!mounted) return;
+
           setUser(u ?? null);
           setTenant(t ?? null);
+          setEmpresa(t?.empresa ?? null);
 
           if (t?.subdomain) localStorage.setItem("tenant", t.subdomain);
-          if (t?.empresa) setEmpresa(t.empresa);
         }
       } catch (err) {
         if (!mounted) return;
@@ -94,7 +95,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   // ----------------- LOGIN -----------------
-  async function login(email: string, password: string, tenantSubdomain: string) {
+  async function login(email: string, password: string, tenantSubdomain?: string) {
     setLoading(true);
     try {
       const data = await apiLogin(email, password, tenantSubdomain);
@@ -113,11 +114,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setTenant(tenantData);
       setEmpresa(tenantData?.empresa ?? null);
 
-      router.push("/dashboard");
+      router.push(data?.redirect || "/dashboard");
       return data;
     } catch (err: any) {
       console.error("Erro no login:", err);
-      throw err.message || "Erro desconhecido";
+      throw err?.message || "Erro desconhecido ao logar";
     } finally {
       setLoading(false);
     }
@@ -150,9 +151,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       setUser(u ?? null);
       setTenant(t ?? null);
+      setEmpresa(t?.empresa ?? null);
 
       if (t?.subdomain) localStorage.setItem("tenant", t.subdomain);
-      if (t?.empresa) setEmpresa(t.empresa);
     } catch (err) {
       console.error("Erro ao atualizar dados:", err);
       await logout();
@@ -171,7 +172,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 // ----------------- HOOK PARA USAR CONTEXTO -----------------
 export function useAuth() {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth must be used inside AuthProvider');
+  if (!ctx) throw new Error('useAuth must be used dentro de <AuthProvider>');
   return ctx;
 }
 

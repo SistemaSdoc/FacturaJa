@@ -29,6 +29,33 @@
   --sidebar-ring: hsl(217.2 91.2% 59.8%);
 }
 
+/* ---------------------------
+   DARK MODE
+--------------------------- */
+.dark {
+  --primary: #D9961A;        /* cor principal no escuro */
+  --accent: #EEF5F5;         /* cor de destaque clara */
+  --background: #171717;     /* fundo escuro */
+  --surface: #2a2a2a;        /* superfície escura */
+
+  --text-on-light: #EEF5F5;  /* texto claro */
+  --text-on-dark: #171717;   /* texto escuro sobre fundo claro */
+
+  --card: #2a2a2a;
+  --card-foreground: #EEF5F5;
+
+  --input: #3a3a3a;
+
+  --sidebar: #1f1f1f;
+  --sidebar-foreground: #EEF5F5;
+  --sidebar-primary: #D9961A;
+  --sidebar-primary-foreground: #171717;
+  --sidebar-accent: #EEF5F5;
+  --sidebar-accent-foreground: #171717;
+  --sidebar-border: #333333;
+  --sidebar-ring: #D9961A;
+}
+
 html,
 body,
 #__next {
@@ -40,7 +67,7 @@ body,
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.45;
-  transition: background 0.45s ease, color 0.45s ease;
+  transition: background-color 0.45s ease, color 0.45s ease;
 }
 
 body {
@@ -117,7 +144,9 @@ label {
    SIDEBAR
 --------------------------- */
 .sidebar {
+  background-color: var(--sidebar);
   color: var(--sidebar-foreground);
+  transition: background-color 0.35s ease, color 0.35s ease;
 }
 
 .sidebar a {
@@ -156,7 +185,6 @@ label {
    BASE LAYOUT TAILWIND
 --------------------------- */
 @layer base {
-
   *,
   *::before,
   *::after {
@@ -171,6 +199,9 @@ label {
     border-radius: var(--radius);
     outline: none;
     padding: 0.5rem 0.75rem;
+    background-color: var(--surface);
+    color: var(--primary);
+    transition: background-color 0.35s ease, color 0.35s ease;
   }
 
   input:focus,

@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  darkMode: "class",
+  darkMode: "class", // ativa dark mode via classe .dark
   content: [
     "./app/**/*.{js,ts,jsx,tsx}",
     "./components/**/*.{js,ts,jsx,tsx}",
@@ -9,11 +9,21 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: "var(--primary)",
-        accent: "var(--accent)",
-        background: "var(--background)",
-        // 'foreground' não existe no seu CSS; mapear para card-foreground/text-on-light
-        foreground: "var(--card-foreground)", 
+        // Paleta clara (default)
+        primary: "#D9961A", // cor principal
+        accent: "#EEF5F5",  // cor de destaque clara
+        background: "#ffffff",
+        foreground: "#171717", // texto padrão no modo claro
+
+        // Paleta escura
+        dark: {
+          bg: "#171717",       // fundo escuro
+          primary: "#D9961A",  // mantém a mesma cor principal
+          accent: "#EEF5F5",   // texto claro
+          foreground: "#EEF5F5",
+        },
+
+        // Variáveis já existentes para compatibilidade com shadcn/ui
         surface: "var(--surface)",
         "text-on-light": "var(--text-on-light)",
         "text-on-dark": "var(--text-on-dark)",
@@ -30,7 +40,6 @@ module.exports = {
         "sidebar-accent-foreground": "var(--sidebar-accent-foreground)",
       },
       borderRadius: {
-        // você só declarou --radius no globals.css — use-o como padrão para vários tamanhos
         sm: "calc(var(--radius) * 0.5)",
         md: "var(--radius)",
         lg: "calc(var(--radius) * 1.25)",
@@ -45,7 +54,6 @@ module.exports = {
     },
   },
   plugins: [
-    // plugin opcional — remova se não for instalar
     require("tailwindcss-animate"),
   ],
 };

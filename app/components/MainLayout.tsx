@@ -13,9 +13,12 @@ import {
   BarChart,
   Settings,
   User,
+  Moon,
+  Sun,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthProvider';
 import { normalizeLogoUrl } from '../utils/normalizeLogo';
+import { useTheme } from '../providers/ThemeProvider';
 
 interface MainEmpresaProps {
   children: ReactNode;
@@ -27,8 +30,8 @@ export default function MainEmpresa({ children }: MainEmpresaProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const { user, empresa, tenant, loading, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
-  // valores finais (prioriza tenant.name para o nome da empresa)
   const empresaName = !loading ? tenant?.name ?? 'Minha Empresa' : 'Carregando...';
   const empresaLogoRaw = empresa?.logo ?? null;
   const empresaLogo = empresaLogoRaw ? normalizeLogoUrl(empresaLogoRaw) : '/logo-placeholder.png';
@@ -37,11 +40,11 @@ export default function MainEmpresa({ children }: MainEmpresaProps) {
 
   const handleLogout = async () => {
     try {
-      await logout(); // chama logout da API
+      await logout();
     } catch (e) {
-      console.error("Erro no logout:", e);
+      console.error('Erro no logout:', e);
     } finally {
-      router.push('/login'); // garante redirect
+      router.push('/login');
     }
   };
 
@@ -57,16 +60,23 @@ export default function MainEmpresa({ children }: MainEmpresaProps) {
   ];
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-[var(--background)] text-[var(--primary)] dark:bg-[var(--background)] dark:text-[var(--accent)] transition-colors duration-300">
+      {/* Overlay para mobile */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/30 md:hidden z-40"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* SIDEBAR */}
       <aside
         className={`
-          fixed top-0 left-0 h-full bg-white text-[#123859] shadow-md p-4 flex flex-col justify-between
+          fixed top-0 left-0 h-full bg-[var(--surface)] text-[var(--sidebar-foreground)] shadow-md p-4 flex flex-col justify-between
           transition-all duration-300 z-50
           ${sidebarOpen ? 'w-64' : 'w-0 overflow-hidden'}
           md:relative md:w-64 md:h-auto
         `}
-        aria-hidden={!sidebarOpen && typeof window !== 'undefined' && window.innerWidth < 768}
       >
         <div>
           {/* Logo + Nome */}
@@ -87,7 +97,7 @@ export default function MainEmpresa({ children }: MainEmpresaProps) {
 
           {/* Informações rápidas da empresa */}
           {sidebarOpen && empresa && !loading && (
-            <div className="text-sm text-gray-600 mb-4 space-y-1">
+            <div className="text-sm mb-4 space-y-1">
               {tenant?.subdomain && <p><strong>Subdomínio:</strong> {tenant.subdomain}</p>}
               {empresa.email && <p><strong>Email:</strong> {empresa.email}</p>}
               {empresa.telefone && <p><strong>Telefone:</strong> {empresa.telefone}</p>}
@@ -104,17 +114,19 @@ export default function MainEmpresa({ children }: MainEmpresaProps) {
                   key={item.path}
                   href={item.path}
                   className={`group flex items-center gap-3 p-2 rounded relative transition-all duration-300 ${
-                    isActive ? 'text-white font-semibold bg-[#F9941F]' : 'text-[#123859] hover:text-[#F9941F]'
+                    isActive
+                      ? 'text-white font-semibold bg-[var(--accent)]'
+                      : 'hover:text-[var(--accent)]'
                   }`}
                 >
                   {isActive && (
-                    <span className="absolute left-0 top-0 h-full w-1 bg-[#F9941F] rounded-tr-lg rounded-br-lg" />
+                    <span className="absolute left-0 top-0 h-full w-1 bg-[var(--accent)] rounded-tr-lg rounded-br-lg" />
                   )}
                   <span className="relative flex items-center gap-3 w-full">
-                    <span className={`transition-colors duration-200 ${isActive ? 'text-white' : ''}`}>
+                    <span className={`${isActive ? 'text-white' : ''}`}>
                       {item.icon}
                     </span>
-                    <span className={`${!sidebarOpen ? 'hidden md:inline' : 'transition-colors duration-200'}`}>
+                    <span className={`${!sidebarOpen ? 'hidden md:inline' : ''}`}>
                       {item.label}
                     </span>
                   </span>
@@ -128,7 +140,7 @@ export default function MainEmpresa({ children }: MainEmpresaProps) {
         <div className={`${!sidebarOpen ? 'flex justify-center' : ''} mt-6`}>
           <button
             onClick={handleLogout}
-            className="sm:w-full md:w-auto px-3 py-2 rounded text-white bg-[#F9941F] hover:brightness-95 flex items-center justify-center gap-2 transition-all duration-150"
+            className="sm:w-full md:w-auto px-3 py-2 rounded text-white bg-[var(--accent)] hover:brightness-95 flex items-center justify-center gap-2 transition-all duration-150"
             aria-label="Logout"
           >
             <LogOut size={16} />
@@ -140,43 +152,69 @@ export default function MainEmpresa({ children }: MainEmpresaProps) {
       {/* CONTEÚDO PRINCIPAL */}
       <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarOpen ? 'md:ml-64' : 'md:ml-0'}`}>
         {/* NAVBAR */}
-        <header className="flex items-center justify-between bg-white shadow px-4 py-4 sm:py-6">
+        <header className="flex items-center justify-between bg-[var(--surface)] text-[var(--primary)] dark:bg-[var(--background)] dark:text-[var(--accent)] shadow px-4 py-4 sm:py-6 transition-colors duration-300">
           <div className="flex items-center gap-4">
             <button
               aria-label="Toggle sidebar"
               onClick={() => setSidebarOpen((s) => !s)}
-              className="p-2 rounded hover:bg-[#E5E5E5] transition-colors duration-150 md:hidden"
+              className="p-2 rounded hover:bg-[var(--accent)]/20 transition-colors duration-150 md:hidden"
             >
               <Menu size={20} />
             </button>
 
             {empresaLogo && (
-              <img src={empresaLogo} alt={tenant?.name ? `${tenant.name} logo` : 'Logo'} className="h-8 w-8 rounded-full object-cover" />
+              <img
+                src={empresaLogo}
+                alt={tenant?.name ? `${tenant.name} logo` : 'Logo'}
+                className="h-8 w-8 rounded-full object-cover"
+              />
             )}
 
-            <span className="font-bold text-[#123859]">{empresaName}</span>
+            <span className="font-bold hidden sm:inline">{empresaName}</span>
           </div>
 
           <div className="flex items-center gap-4">
-            <button className="relative p-2 rounded hover:bg-[#E5E5E5] transition-colors duration-150" aria-label="Notifications">
+            {/* Notificações */}
+            <button
+              className="relative p-2 rounded hover:bg-[var(--accent)]/20 transition-colors duration-150"
+              aria-label="Notifications"
+            >
               <Bell size={20} />
               <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500" />
             </button>
 
+            {/* Alternância de tema */}
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded hover:bg-[var(--accent)]/20 transition-colors duration-150"
+              aria-label="Toggle theme"
+            >
+              {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
+
+            {/* Avatar do usuário */}
             {userPhoto ? (
-              <img src={userPhoto} alt={finalUserName ?? 'User'} className="h-8 w-8 rounded-full object-cover" />
+              <img
+                src={userPhoto}
+                alt={finalUserName ?? 'User'}
+                className="h-8 w-8 rounded-full object-cover"
+              />
             ) : (
-              <div className="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center text-white">
+              <div className="h-8 w-8 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center text-white">
                 {(finalUserName && finalUserName[0]) ?? 'U'}
               </div>
             )}
 
-            <span className="font-medium text-[#123859] hidden sm:inline">{!loading ? finalUserName : ''}</span>
+            <span className="font-medium hidden sm:inline">
+              {!loading ? finalUserName : ''}
+            </span>
           </div>
         </header>
 
         {/* MAIN CONTENT */}
-        <main className="flex-1 p-4 sm:p-6">{children}</main>
+        <main className="flex-1 p-4 sm:p-6 lg:p-8">
+          {children}
+        </main>
       </div>
     </div>
   );

@@ -38,15 +38,15 @@ export default function AdminEmpresasPage() {
     (e.nome.toLowerCase().includes(search.toLowerCase()) || e.email.toLowerCase().includes(search.toLowerCase()))
   );
 
-  if (loading) return <p className="p-6 text-center">Carregando empresas...</p>;
+  if (loading) return <p className="p-6 text-center text-[var(--primary)]">Carregando empresas...</p>;
 
   return (
     <MainAdmin>
       <div className="p-4 space-y-6">
-        <h1 className="text-2xl font-bold text-[#123859]">Empresas</h1>
+        <h1 className="text-2xl font-bold text-[var(--primary)]">Empresas</h1>
 
         {/* Filtros */}
-        <Card className="bg-[#F2F2F2]">
+        <Card className="bg-[var(--surface)]">
           <CardHeader>
             <CardTitle>Filtros</CardTitle>
           </CardHeader>
@@ -56,12 +56,12 @@ export default function AdminEmpresasPage() {
               placeholder="Procurar por nome ou email..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="p-2 rounded flex-1 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#123859]"
+              className="p-2 rounded flex-1 border border-[var(--sidebar-border)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] bg-[var(--background)] text-[var(--primary)]"
             />
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value as any)}
-              className="p-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#123859]"
+              className="p-2 rounded border border-[var(--sidebar-border)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] bg-[var(--background)] text-[var(--primary)]"
             >
               <option value="Todos">Todos</option>
               <option value="Ativa">Ativa</option>
@@ -71,7 +71,7 @@ export default function AdminEmpresasPage() {
         </Card>
 
         {/* Tabela de empresas */}
-        <Card className="bg-[#F2F2F2]">
+        <Card className="bg-[var(--surface)]">
           <CardHeader>
             <CardTitle>Lista de Empresas</CardTitle>
           </CardHeader>
@@ -79,30 +79,41 @@ export default function AdminEmpresasPage() {
             <Table className="min-w-full">
               <TableHeader>
                 <TableRow>
-                  <TableHead>ID</TableHead>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Telefone</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Ações</TableHead>
+                  <TableHead className="text-[var(--primary)]">ID</TableHead>
+                  <TableHead className="text-[var(--primary)]">Nome</TableHead>
+                  <TableHead className="text-[var(--primary)]">Email</TableHead>
+                  <TableHead className="text-[var(--primary)]">Telefone</TableHead>
+                  <TableHead className="text-[var(--primary)]">Status</TableHead>
+                  <TableHead className="text-[var(--primary)]">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filtered.map(e => (
-                  <TableRow key={e.id} className="hover:bg-gray-50">
-                    <TableCell>{e.id}</TableCell>
-                    <TableCell className="font-medium text-[#123859]">{e.nome}</TableCell>
-                    <TableCell>{e.email}</TableCell>
-                    <TableCell>{e.telefone}</TableCell>
-                    <TableCell>{e.status}</TableCell>
+                  <TableRow key={e.id} className="hover:bg-[var(--accent)]/10 transition-colors">
+                    <TableCell className="text-[var(--primary)]">{e.id}</TableCell>
+                    <TableCell className="font-medium text-[var(--primary)]">{e.nome}</TableCell>
+                    <TableCell className="text-[var(--primary)]">{e.email}</TableCell>
+                    <TableCell className="text-[var(--primary)]">{e.telefone}</TableCell>
+                    <TableCell className={e.status === 'Ativa' ? 'text-green-600' : 'text-red-600'}>
+                      {e.status}
+                    </TableCell>
                     <TableCell className="flex gap-2 flex-wrap">
-                      <Button variant="outline" size="sm" onClick={() => router.push(`/admin/empresas/${e.id}`)}>Ver</Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => router.push(`/admin/empresas/${e.id}`)}
+                        className="border-[var(--primary)] text-[var(--primary)] hover:bg-[var(--accent)] hover:text-white"
+                      >
+                        Ver
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
                 {filtered.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center text-gray-500">Nenhuma empresa encontrada.</TableCell>
+                    <TableCell colSpan={6} className="text-center text-[var(--primary)]/70">
+                      Nenhuma empresa encontrada.
+                    </TableCell>
                   </TableRow>
                 )}
               </TableBody>
